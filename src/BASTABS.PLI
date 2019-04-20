@@ -1,0 +1,87 @@
+/*
+ *****************************************************************************
+ *                                                                           *
+ * Copyright 1978 Compaq Computer Corporation                                *
+ *                                                                           *
+ * Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+ *                                                                           *
+ * Confidential computer software. Valid license from Compaq required for    *
+ * possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+ * Commercial Computer Software, Computer Software Documentation, and        *
+ * Technical Data for Commercial Items are licensed to the U.S. Government   *
+ * under vendors standard commercial license.                                *
+ *                                                                           *
+ *****************************************************************************
+
+facility:
+
+	SDL (Structure Definition Language)
+
+
+author:
+	Paul A. Calato
+
+*/
+
+/*			C H A N G E    L O G
+
+      Date	! Name	! Description
+________________!_______!______________________________________________________
+   		!  	! 					
+    23-Nov-1985	|  pc	| Adding copyright header and change log.
+________________!_______!______________________________________________________
+     8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+________________|_______|______________________________________________________
+*/
+
+
+/****************************************************************/
+/*								*/
+/* TABS calculates the level of indentation i.e number of tabs	*/
+/*								*/
+/****************************************************************/
+ 
+ 
+tabs: procedure (cur_node, level, flag) returns(char(132) var);
+					    /********************/
+					    /*			*/
+					    /* TABS		*/
+					    /*			*/
+					    /********************/
+
+%include 'sdl$library:sdltypdef.in';	    /* type definitions		    */
+%include 'sdl$library:sdlnodef.in';	    /* node structure definition    */
+
+/* declare variables */
+declare
+    cur_node  pointer,			    /* pointer to the current node  */
+    level fixed binary(31),		    /* level in the aggregate	    */
+    flag bit(1),			    /* union flag		    */
+    temp_node  pointer,			    /* for traversing the parent tree */
+    tab char(132) var initial(''),	    /* indentation		    */
+    found bit(1) initial('0'b),		    /* flag			    */
+    i fixed binary(31);			    /* counter			    */
+
+    do i = 1 to level;
+	tab = tab || '   ';
+    end;
+
+
+/* if the calling program is interested, determine if the current item	    */
+/* is inside of a union,these items need a extra tab			    */
+    if( flag )
+    then do;
+	temp_node = cur_node->nod$a_parent;
+	do while ( temp_node ^= null() & ^found );
+	    if( temp_node->nod$w_datatype  = typ$k_union )
+	    then do;
+	    	tab = tab || '   ';
+	    	found = '1'b;
+	    end;
+	    temp_node = temp_node->nod$a_parent;
+	end;
+    end;
+
+    return(tab);
+
+end tabs;

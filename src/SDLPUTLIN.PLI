@@ -1,0 +1,102 @@
+/*
+ *****************************************************************************
+ *                                                                           *
+ * Copyright 1983 Compaq Computer Corporation                                *
+ *                                                                           *
+ * Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+ *                                                                           *
+ * Confidential computer software. Valid license from Compaq required for    *
+ * possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+ * Commercial Computer Software, Computer Software Documentation, and        *
+ * Technical Data for Commercial Items are licensed to the U.S. Government   *
+ * under vendors standard commercial license.                                *
+ *                                                                           *
+ *****************************************************************************
+
+*
+*
+* FACILITY:	 SDL 
+*
+* ABSTRACT:	 tbs
+*
+* ENVIRONMENT:	 VAX/VMS
+*
+* AUTHOR:	 C. T. Pacy
+*
+* CREATION DATE: Dec. 1980
+*
+* MODIFIED BY:
+
+/*			C H A N G E    L O G
+
+      Date	! Name	! Description
+________________!_______!______________________________________________________
+		|	|
+ 10-Sep-1983	|  kd	|  Remove this module from the SDLIO.pli file and make
+		|	|  it a seperate routine.  This routine is only used by
+		|	|  backends.  Add some documentation to the routines.	
+________________|_______|______________________________________________________
+  5-Mar-1985	|  kd	|  2-1 Add IDENT.
+________________|_______|______________________________________________________
+     8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+________________|_______|______________________________________________________
+*
+**/
+
+/**
+* FUNCTIONAL DESCRIPTION: SDL$PUTLINE
+*
+*	This routine outputs a line of text to the current language
+*	output file.  If the text to be output is greater than the
+*	line length, it is broken at the nearest delimiter (a space, tab
+*	or comma) and output on the next line.
+*
+*
+* FORMAL PARAMETERS:
+*
+*	outfile The output file to be written to
+*	buf	The buffer to be written to the output file
+*	len	The length of the buffer to be written
+*
+* IMPLICIT INPUTS:
+*
+*	tbs
+*
+* IMPLICIT OUTPUTS:
+*
+*	tbs
+*
+* ROUTINE VALUE:
+* COMPLETION CODES:
+*
+*	This routine returns the length of the buffer that is written.
+*
+*/
+sdl$putline:	proc (outfile, buf, len) 
+		    options(ident('2-1')) 
+		    returns (fixed bin(31) );
+	
+	dcl outfile file variable;
+	dcl buf char(1024) var;
+	dcl delimiters char(3) static init (' 	,'); /* space,tab, comma */
+	dcl (i,j,len) fixed bin;
+	dcl tmpbuf char(1024) var;
+ 
+	do i=1 to length(buf) by len;
+		if length(buf)<=len then
+			write file(outfile)  from (buf) ;
+		else do;
+			tmpbuf=substr(buf,1,len);
+			do j=len to 1 by -1;
+				if index(delimiters,substr(tmpbuf,j,1))^=0 then
+					goto l1;
+				end;
+l1:
+			tmpbuf=substr(tmpbuf,1,j);
+			write file(outfile) from (tmpbuf);
+			buf=substr(buf,j+1);
+			end;
+		end;
+	return (length(buf));
+end;
+

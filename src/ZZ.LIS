@@ -1,0 +1,3570 @@
+  VAX/VMS PAT -- Version of 07 DEC 85      --   31-MAR-2009 12:09:33.73
+	
+	
+	{ SDLPAT.PAT
+	{			C H A N G E    L O G
+	{
+	{      Date	! Name	! Description
+	{_______________!_______!______________________________________________________
+	{   11-Jan-1988	|  PG	| X3.2-0 Added STRING clause to CONSTANT.
+	{		!	|        Changed STRING token to STRING_LITERAL
+	{_______________!_______!______________________________________________________
+	{   14-Jan-1988	|  jg	| X3.2-1 Added standard change log.
+	{   		|	| 	 Added syntax for TYPEDEF, Entry point
+	{   		|	| 	 return types, and SIZEOF.
+	{_______________!_______!______________________________________________________
+	{   22-Jan-1988	|  jg	| X3.2-2 Add DECLARE statement.
+	{_______________!_______!______________________________________________________
+	{   26-Jan-1988	|  jg	| X3.2-3 Changes to DECLARe syntax.
+	{		|	|	 Add colldecl action.
+	{_______________!_______!______________________________________________________
+	{   27-Jan-1988	|  jg	| X3.2-4 Modify address object to allow sizeof if
+	{		|	|	  not an aggregate name
+	{_______________|_______|______________________________________________________
+	{   15-Feb-1988	|  jg	| X3.2-5 Add conditional and literal statements.
+	{		|	|	 Includes new keywords IFLANGUAGE,
+	{		|	|	 END_IFLANGUAGE, LITERAL and END_LITERAL.
+	{		|	|	 Check for null token on NAME.
+	{_______________|_______|______________________________________________________
+	{   26-Feb-1988	|  jg	| X3.2-6 Add READ statement
+	{_______________|_______|______________________________________________________
+	{   14-Feb-1990 |  lw   | X3.2-7 Add support for INTEGER data type
+	{               |       |        Add new keywords IFSYMBOL and END_IFSYMBOL
+	{_______________|_______|______________________________________________________
+	{   17-Mar-92	|  jak  | EV1-2  Added ALIGN and NOALIGN.
+	{		|	|	 Corrected spelling of "chkalign".
+	{		|	|	 Changed "pop_parent" to "popparent"
+	{		|	|	 and "pop_cond" to "popcond".
+	{_______________|_______|______________________________________________________
+	{    4-Jun-92 	|  jak  | EV1-12  Added SIGNED option to integer types.
+	{_______________|_______|______________________________________________________
+	{    8-Dec-92 	|  jak  | EV1-20  Syntax changes to simplify SIZEOF.
+	{   21-Jan-93	|	|	Added object_option to POINTER types.
+	{		|	|	Added BASEALIGN keyword and option.
+	{_______________|_______|______________________________________________________
+	{    8-Feb-93	|  jak	| EV1-21  Added ELSE, ELSEIF to IFSYMBOL.
+	{_______________|_______|______________________________________________________
+	{   18-Mar-93	|  jak	| EV1-21A Added action /endconst needed for bug fix.
+	{_______________|_______|______________________________________________________
+	
+	 
+	}
+	
+	TERMINAL
+	 
+	GOALSY					=  00 ;
+	
+	{ tokens }
+	COMMENT,t_comment			=  01 ;
+	LOCAL_NAME,t_local_name			=  02 ;
+	NAME,t_name				=  03 ;
+	NUMERIC,t_numeric			=  04 ;
+	STRING_LITERAL,t_string_literal 	=  05 ;
+	 
+	{ statement keywords }
+	AGGREGATE,t_aggregate			=  06 ;
+	CONSTANT,t_constant			=  07 ;
+	'END',t_end				=  08 ;
+	END_MODULE,t_end_module			=  09 ;
+	ENTRY,t_entry				=  10 ;
+	ITEM,t_item				=  11 ;
+	MODULE,t_module				=  12 ;
+	EQUALS,t_equals				=  13 ;
+	 
+	{ statement options }
+	COMMON,t_common				=  14 ;
+	DIMENSION,t_dimension			=  15 ;
+	PREFIX,t_prefix				=  16 ;
+	TAG,t_tag				=  17 ;
+	INCREMENT,t_increment			=  18 ;
+	PARAMETER,t_parameter			=  19 ;
+	RETURNS,t_returns			=  20 ;
+	VALUE,t_value				=  21 ;
+	GLOBAL,t_global				=  22 ;
+	VARIABLE,t_variable			=  23 ;
+	 
+	{ data types }
+	ADDRESS,t_address	= 24 ;
+	BOOLEAN,t_boolean	= 25 ;
+	BYTE,t_byte		= 26 ;
+	CHARACTER,t_character	= 27 ;
+	DECIMAL,t_decimal	= 28 ;
+	D_FLOATING,t_d_floating	= 29 ;
+	F_FLOATING,t_f_floating	= 30 ;
+	G_FLOATING,t_g_floating	= 31 ;
+	H_FLOATING,t_h_floating	= 32 ;
+	LONGWORD,t_longword	= 33 ;
+	OCTAWORD,t_octaword	= 34 ;
+	QUADWORD,t_quadword	= 35 ;
+	BITFIELD,t_bitfield	= 36 ;
+	WORD,t_word		= 37 ;
+	STRUCTURE,t_structure	= 38 ;
+	UNION,t_union		= 39 ;
+	ANY,t_any		= 40 ;
+	 
+	{ data type options } 
+	LENGTH,t_length		= 41 ;
+	MASK,t_mask		= 42 ;
+	PRECISION,t_precision	= 43 ;
+	UNSIGNED,t_unsigned	= 44 ;
+	VARYING,t_varying	= 45 ;
+	
+	{new keyword}
+	TYPEDEF,t_typedef	= 46 ;
+	ORIGIN,t_origin		= 47 ;
+	DESCRIPTOR,t_descriptor	= 48 ;
+	COUNTER,t_counter	= 49 ;
+	IN,t_in			= 50 ;
+	OUT,t_out		= 51 ;
+	NAMED,t_named		= 52 ;
+	IDENT,t_ident		= 53 ;
+	BASED,t_based		= 54 ;
+	FILL,t_fill		= 55 ;
+	ALIAS,t_alias		= 56 ;
+	DEFAULT,t_default	= 57 ;
+	REFERENCE,t_reference	= 58 ;
+	LINKAGE,t_linkage	= 59 ;
+	 
+	{ punctuation }
+	'!',t_exclamation	= 60;
+	'&',t_ampersand		= 61;
+	'(',t_l_paren		= 62;
+	')',t_r_paren		= 63;
+	'*',t_star		= 64;
+	'+',t_plus		= 65;
+	',',t_comma		= 66;
+	'-',t_minus		= 67;
+	'.',t_dot		= 68;
+	'/',t_slash		= 69;
+	':',t_colon		= 70;
+	';',t_semicolon		= 71;
+	'=',t_equal		= 72;
+	'@',t_at		= 73;
+	'^',t_circumflex	= 74;
+	EOL,t_eol		= 75;
+	EOF,t_eof		= 76;
+	INCLUDE,t_include	= 77;
+	SIGNED,t_signed		= 78;
+	OPTIONAL,t_optional	= 79;
+	MARKER,t_marker		= 80;
+	TYPENAME,t_typename	= 81;
+	LIST,t_list		= 82;
+	RTL_STR_DESC,t_rtl_str_desc = 83;
+	COMPLEX,t_complex	= 84;
+	STRING,t_string		= 85;
+	VOID,t_void		= 86;
+	SIZEOF,t_sizeof		= 87;
+	DECLARE,t_declare	= 88;
+	IFLANGUAGE,t_iflanguage = 89;
+	END_IFLANGUAGE,t_end_iflanguage = 90;
+	LITERAL,t_literal	= 91;
+	END_LITERAL,t_end_literal = 92;
+	READ,t_read		= 93;
+	INTEGER,t_integer	= 94;
+	IFSYMBOL,t_ifsymbol	= 95;
+	END_IFSYMBOL,t_end_ifsymbol = 96;
+	HARDWARE_ADDRESS,t_hardware_address = 97;
+	HARDWARE_INTEGER,t_hardware_integer = 98;
+	POINTER_HW,t_pointer_hw = 99;
+	POINTER_LONG,t_pointer_long = 100;
+	POINTER,t_pointer	= 101;
+	POINTER_QUAD,t_pointer_quad = 102;
+	INTEGER_BYTE,t_integer_byte = 103;
+	INTEGER_WORD,t_integer_word = 104;
+	INTEGER_LONG,t_integer_long = 105;
+	INTEGER_QUAD,t_integer_quad = 106;
+	INTEGER_HW,t_integer_hw = 107;
+	ERRORMARK,t_errormark	= 108 ;
+	ALIGN,t_align		= 109;
+	NOALIGN,t_noalign	= 110;
+	BASEALIGN,t_basealign	= 111;
+	ELSE,t_else		= 112;
+	ELSE_IFSYMBOL,t_else_ifsymbol		= 113;
+	ELSE_IFLANGUAGE,t_else_iflanguage	= 114;
+	END;
+	 
+	 
+	 
+	BEGIN
+	 
+	ADDLE			= program GOALSY;
+	 
+	program			= m1 m2 ;
+	 
+	m1			= {epsilon}				/initialize ;
+	 
+	m2			= module_list EOF
+				| ERRORMARK EOF 			/SYNERROR;
+	
+	module_list		= module_declaration 
+				| module_list module_declaration ;
+	
+	module_declaration	= module_statement module_body end_module_statement
+				| local_assignment 
+				| COMMENT				/commentnod;
+	 
+	module_statement	= m_name m_options ';'			/makechild;
+	
+	m_name			= MODULE namestring			/makmodnod
+				| ERRORMARK MODULE namestring		/SYNERROR ;
+	
+	m_options		= IDENT namestring			/setident
+				| {epsilon} ;
+	 
+	module_body		= module_body statement 
+				| {epsilon} ;
+	 
+	end_module_statement	= END_MODULE name_option ';'		/endmod
+				| ERRORMARK END_MODULE name_option ';'	/SYNERROR ;
+	 
+	name_option		= namestring				/checkname
+				| {epsilon} ;
+	 
+	statement		= local_assignment 
+				| constant_statement 
+				| entry_statement 
+				| aggregate_statement 
+				| item_statement 
+				| declare_statement
+				| ifsymbol_statement 
+				| conditional_statement
+				| literal_statement
+				| read_statement ';'
+				| COMMENT				/commentnod 
+				| include_clause ';'
+				| ERRORMARK ';'				/SYNERROR
+				| ';' ;
+	
+	include_clause		= INCLUDE include_name stat_list EOF 	/resettext 
+				| INCLUDE include_name EOF 		/resettext ;
+	
+	include_name		= STRING_LITERAL			/includetext ;
+	
+	read_statement		= READ STRING_LITERAL			/readfile ;
+	
+	stat_list		= stat_list statement
+				| statement ;
+	 
+	local_assignment	= local_symbol '=' expression ';'	/localasn ;
+	 
+	local_symbol		= LOCAL_NAME				/savelocalname ;
+	 
+	constant_statement	= constant_key constant_body ';'	/endconst ;
+	
+	constant_key		= CONSTANT 				/startconst ;
+	 
+	constant_body		= constant_phrase 
+				| constant_body ',' comment_list constant_phrase ;
+	
+	constant_phrase		= name_or_list EQUALS value_or_string	/makcstnod ;
+	
+	value_or_string		= constant_value constant_options
+				| STRING string_value string_options ;
+	
+	comment_list		= comment_list COMMENT			/commentnod
+				| {epsilon} ;
+	
+	name_or_list		= c_name_1 
+				| '(' comment_list name_list ')' c_comment_list 
+				| '(' comment_list name_list c_comma2 ')' c_comment_list ;
+	 
+	name_list		= c_name_1
+				| c_comma1 c_name_1
+				| name_list c_comma2 c_name_1 ;
+	
+	c_name_1		= c_name c_comment_list ;
+	
+	c_name			= namestring				/maknamlis ;
+	 
+	c_comma1		= c_comma				/nullname 
+				| c_comma1 c_comma			/nullname ;
+	 
+	c_comma2		= c_comma
+				| c_comma2 c_comma			/nullname ;
+	
+	c_comma			= ',' c_comment_list ;
+	
+	c_comment_list		= c_comment_list COMMENT		/setnamcom
+				| {epsilon} ;
+	 
+	constant_value		= expression				/setconval ;
+	 
+	constant_options	= constant_options INCREMENT expression	/setincr
+				| constant_options PREFIX namestring	/saveprefix
+				| constant_options TAG namestring	/savetag
+				| constant_options COUNTER LOCAL_NAME	/savecounter
+				| constant_options TYPENAME typestring	/savetypenam
+				| {epsilon} ;
+	                                                                             
+	string_value		= STRING_LITERAL			/setconstr ;
+	
+	string_options		= string_options PREFIX namestring	/saveprefix
+				| string_options TAG namestring		/savetag
+				| {epsilon} ;
+	
+	namestring		= NAME					/checknull
+				| STRING_LITERAL ;
+	 
+	entry_statement		= entry_clause entry_option ';'		/setlineno_checklist;
+	 
+	entry_clause		= ENTRY namestring			/makentnod ;
+	 
+	entry_option		= entry_option parameter_keyword '(' param_list ')'
+									/popparent
+				| entry_option return_keyword ret_data_type
+					return_name_option
+				| entry_option return_keyword ret_data_type
+					return_name_option COMMENT	/commentnod
+				| entry_option VARIABLE			/setvaropt
+				| entry_option TYPENAME typestring	/settypname
+				| entry_option ALIAS namestring		/setalias
+				| entry_option LINKAGE namestring	/setlink
+				| {epsilon} ;
+	 
+	parameter_keyword	= PARAMETER				/setparm ;
+	 
+	return_keyword		= RETURNS				/setreturn ;
+	 
+	ret_data_type		= data_or_user_type
+				| VOID 					/setvoid ;
+	
+	return_name_option	= NAMED namestring			/setretname
+				| {epsilon} ;
+	
+	param_list		= comment_list p1 param p_opt p2
+				| param_list ',' comment_list p1 param p_opt p2 ;
+	 
+	p1			= {epsilon}				/makparnod ;
+	
+	p2			= {epsilon}				/setdefprmatt ;
+	
+	param			= data_or_user_type 
+				| ANY					/setany ;
+	
+	p_opt			= p_opt VALUE				/setvalopt
+				| p_opt DESCRIPTOR			/setdescrip
+				| p_opt RTL_STR_DESC			/setrtlstrdesc
+				| p_opt DIMENSION dimen_expr
+				| p_opt IN				/setin
+				| p_opt OUT				/setout
+				| p_opt LIST				/setlist
+				| p_opt NAMED namestring		/setpname
+				| p_opt DEFAULT expression		/setdefault
+				| p_opt OPTIONAL			/setoptional
+				| p_opt REFERENCE			/setref
+				| p_opt COMMENT				/commentnod
+				| p_opt TYPENAME typestring		/settypname
+				| {epsilon} ;
+	
+	typestring		= NAME                                  /checknull
+	                        | STRING_LITERAL;
+	
+	dimen_expr		= expression				/setdimen
+				| lodimen ':' expression		/sethidim
+				| '*'					/setvardim;
+	 
+	lodimen			= expression				/setlodim ;
+	 
+	data_type		= BYTE sign_option			/setbyte
+				| WORD sign_option			/setword
+				| LONGWORD sign_option			/setlong
+				| QUADWORD sign_option			/setquad
+				| OCTAWORD sign_option			/setocta
+				| F_FLOATING complex_option		/setfloat
+				| D_FLOATING complex_option		/setdouble
+				| G_FLOATING complex_option		/setgrand
+				| H_FLOATING complex_option		/sethuge
+				| DECIMAL PRECISION '(' prec ',' scale ')' /setdec
+				| BITFIELD vield_options		/setvield
+				| CHARACTER  char_options		/setchar
+				| BOOLEAN				/setbool
+				| ADDRESS      object_option		/setaddr 
+	                        | POINTER      object_option            /setps
+	                        | POINTER_LONG object_option            /setpl
+	                        | POINTER_QUAD object_option            /setpq
+	                        | POINTER_HW   object_option            /setph
+	                        | INTEGER_BYTE sign_option		/setib
+	                        | INTEGER_WORD sign_option	        /setiw
+	                        | INTEGER_LONG sign_option	        /setil
+	                        | INTEGER_QUAD sign_option	        /setiq
+	                        | INTEGER_HW   sign_option	        /setih
+				| INTEGER      sign_option	        /setint
+				| HARDWARE_ADDRESS object_option	/sethwadr
+				| HARDWARE_INTEGER sign_option		/sethwint;
+	 
+	object_option		= obj_paren object_type base_option ')'	/popparent
+				| {epsilon} ;
+	 
+	obj_paren		= '('					/makobjnod;
+	 
+	object_type		= data_or_user_type dimension_option
+				| entry_object entry_option 		/popparent;
+	
+	entry_object		= ENTRY					/setentry;
+	 
+	base_option		= basealign_option 
+				| {epsilon} ;
+	
+	sign_option		= SIGNED				/setsigned
+				| UNSIGNED				/setunsign
+				| {epsilon} ;
+	
+	complex_option		= COMPLEX				/setcomplex
+				| {epsilon} ;
+	 
+	prec			= expression				/setprec ;
+	 
+	scale			= expression				/setscale ;
+	 
+	vield_options		= vield_options MASK			/setmask
+				| vield_options LENGTH expression	/setlength
+				| vield_options SIGNED			/setsigned
+				| vield_options UNSIGNED		/setunsign
+				| {epsilon} ;
+	 
+	char_options		= char_options VARYING			/setchrvar
+				| char_options LENGTH length_expr
+				| {epsilon} ;
+	 
+	length_expr		= '*'					/setunklength
+				| expression				/setlength ;
+	
+	dimension_option	= DIMENSION dimen_expr
+				| {epsilon} ;
+	 
+	aggregate_statement	= aggregate_dcl aggregate_body aggregate_end ;
+	 
+	aggregate_dcl		= aggregate_clause aggregate_type 
+				  impl_union_datatype aggr_options ';'	/makechild ;
+	 
+	aggregate_clause	= AGGREGATE namestring			/makitmnod ;
+	 
+	aggregate_type		= STRUCTURE				/setstruc
+				| UNION					/setunion ;
+	 
+	impl_union_datatype     = data_type
+				| {epsilon} ;
+	
+	aggr_options		= aggr_options COMMON			/setcommon
+				| aggr_options GLOBAL			/setglobal
+	    			| aggr_options TYPEDEF                  /settypedef
+				| aggr_options ALIGN			/setalign
+				| aggr_options NOALIGN			/setnoalign
+				| aggr_options basealign_option
+				| aggr_options PREFIX namestring	/setprefix
+				| aggr_options TAG namestring		/settag
+				| aggr_options DIMENSION dimen_expr
+				| aggr_options ORIGIN namestring	/setorigin
+				| aggr_options BASED namestring		/basedptr
+				| aggr_options BASED
+				| aggr_options MARKER namestring	/setmark
+				| aggr_options FILL			/setfill
+				| {epsilon} ;
+	
+	aggregate_body		= aggregate_body aggregate_member
+				| aggregate_body local_assignment
+				| aggregate_body constant_statement
+				| aggregate_body COMMENT		/commentnod
+				| aggregate_body ifsymbol_clause 
+				| aggregate_body ';'
+				| {epsilon} ;
+	 
+	aggregate_member	= member_name rest_of_member 
+				| ERRORMARK ';'				/SYNERROR ;
+	 
+	member_name		= namestring				/makitmnod ;
+	 
+	rest_of_member		= data_or_user_type member_options ';'	/endmember
+				| sub_agg_dcl aggregate_body aggregate_end ;
+	 
+	member_options		= member_options PREFIX namestring	/setprefix
+				| member_options TAG namestring		/settag
+				| member_options FILL			/setfill
+				| member_options DIMENSION dimen_expr
+				| member_options ALIGN			/setalign
+				| member_options NOALIGN		/setnoalign
+				| member_options basealign_option
+				| {epsilon} ;
+	 
+	sub_agg_dcl		= aggregate_type impl_union_datatype 
+						member_options ';'	/makechild ;
+	
+	aggregate_end		= 'END' name_option ';'			/aggend
+				| ERRORMARK 'END' name_option ';'	/SYNERROR ;
+	
+	ifsymbol_clause 	= ifsymbol_start ';' 
+							aggregate_body 
+				  else_ifsymbol_clause 
+				  else_symbol_clause 
+				  ifsymbol_end ';' ;
+	
+	else_ifsymbol_clause	= else_ifsymbol_clause 
+				  else_ifsymbol_start ';' aggregate_body 
+				| {epsilon} ;
+	
+	else_symbol_clause	= else_symbol ';'	aggregate_body 
+				| {epsilon} ;
+	
+	ifsymbol_statement 	= ifsymbol_start ';' 
+							module_body 
+				  else_ifsymbol_statement 
+				  else_symbol_statement 
+				  ifsymbol_end ';' ;
+	
+	else_ifsymbol_statement	= else_ifsymbol_statement 
+				  else_ifsymbol_start ';' module_body 
+				| {epsilon} ;
+	
+	else_symbol_statement	= else_symbol ';'	module_body 
+				| {epsilon} ;
+	
+	ifsymbol_start		= IFSYMBOL namestring			/ifsymbol_start ;
+	
+	else_ifsymbol_start	= ELSE_IFSYMBOL namestring		/ifsymbol_elseif ;
+	
+	else_symbol		= ELSE					/ifsymbol_else ;
+	
+	ifsymbol_end		= END_IFSYMBOL				/ifsymbol_end ;
+	
+	item_statement		= item_clause 
+				  data_or_user_type item_options ';'	/enditem;
+	 
+	item_clause		= ITEM namestring			/makitmnod ;
+	 
+	item_options		= item_options COMMON			/setcommon
+				| item_options GLOBAL			/setglobal
+	    			| item_options TYPEDEF			/settypedef
+				| item_options PREFIX namestring	/setprefix
+				| item_options TAG namestring		/settag
+				| item_options DIMENSION dimen_expr
+				| item_options basealign_option
+				| {epsilon} ;
+	 
+	data_or_user_type	= data_type
+				| user_typename sizeof_clause_opt	/setuser ;
+	
+	user_typename		= namestring				/saveusername ;
+	
+	sizeof_clause_opt	= sizeof_clause
+				| {epsilon} ;
+	
+	sizeof_clause		= sizeof_keyword sizeof_option		/endsizeof ;
+	
+	sizeof_keyword		= SIZEOF				/setsizeof ;
+	
+	sizeof_option		= data_or_user_type 
+				| '(' expression ')'			/setsizexpr ;
+	
+	basealign_option	= basealign_key data_or_user_type	/setbasetype 
+				| basealign_key '(' expression ')'	/setbaseexpr ;
+	
+	basealign_key		= BASEALIGN				/setbasealign ;
+	
+	declare_statement	= decl_clause decl_body decl_options	/setdecl ;
+	
+	decl_clause		= DECLARE user_typename			/makitmnod ;
+	
+	decl_body		= sizeof_clause				/setuser ;
+	
+	decl_options		= decl_options PREFIX namestring	/setprefix
+				| decl_options TAG namestring		/settag
+				| {epsilon} ;
+	
+	conditional_statement	= cond1 cond2 module_body
+				  END_IFLANGUAGE lang_list_opt		/endcond ;
+	
+	cond1			= IFLANGUAGE				/startcond ;
+	
+	cond2			= language_list				/popcond ;
+	
+	language_list		= lang_name 
+				| language_list lang_name ;
+	
+	lang_name		= namestring				/condobj ;
+	
+	lang_list_opt		= lang_list_opt namestring		/marklang
+				| {epsilon} ;
+	
+	literal_statement	= literal_keyword 
+					stringlist END_LITERAL		/endlit ;
+	
+	literal_keyword		= LITERAL ';'				/startlit ;
+	
+	stringlist		= stringlist STRING_LITERAL		/maklitnod
+				| {epsilon} ;
+	
+	expression		= expression '&' expression_1		/andterms
+				| expression_1 ;
+	 
+	expression_1		= expression_1 '!' expression_2		/orterms
+				| expression_2 ;
+	 
+	expression_2		= expression_2 '@' expression_3		/shifterms
+				| expression_3 ;
+	 
+	expression_3		= expression_3 '+' expression_4		/addterms
+				| expression_3 '-' expression_4		/subterms
+				| expression_4 ;
+	 
+	expression_4		= expression_4 '*' expression_5		/multerms
+				| expression_4 '/' expression_5		/divterms
+				| expression_5 ;
+	 
+	expression_5		= '+' expression_6			/plusterm
+				| '-' expression_6			/minusterm
+				| expression_6 ;
+	 
+	expression_6		= NUMERIC				/pushterm
+				| LOCAL_NAME				/pushlocal
+				| namestring				/pushconst
+				| '.'					/pushdot
+				| '^'					/pushcirc
+				| ':'					/pushcolon
+				| '(' expression ')' ;
+	 
+	END.
+	
+
+	 
+			Grammar Listing
+			------- -------
+
+     1	ADDLE		 =  PROGRAM goalsy
+
+     2	PROGRAM		 =  M1 M2
+
+     3	M1		 = 							/INITIALIZE                     
+
+     4	M2		 =  MODULE_LIST eof
+     5			 |  errormark eof					/SYNERROR                       
+
+     6	MODULE_LIST	 =  MODULE_DECLARATION
+     7			 |  MODULE_LIST MODULE_DECLARATION
+
+     8	MODULE_DECLARATION =  MODULE_STATEMENT MODULE_BODY END_MODULE_STATEMENT
+     9			 |  LOCAL_ASSIGNMENT
+    10			 |  comment						/COMMENTNOD                     
+
+    11	MODULE_STATEMENT =  M_NAME M_OPTIONS ';'				/MAKECHILD                      
+
+    12	M_NAME		 =  module NAMESTRING					/MAKMODNOD                      
+    13			 |  errormark module NAMESTRING				/SYNERROR                       
+
+    14	M_OPTIONS	 =  ident NAMESTRING					/SETIDENT                       
+    15			 | 
+
+    16	MODULE_BODY	 =  MODULE_BODY STATEMENT
+    17			 | 
+
+    18	END_MODULE_STATEMENT =  end_module NAME_OPTION ';'			/ENDMOD                         
+    19			 |  errormark end_module NAME_OPTION ';'		/SYNERROR                       
+
+    20	NAME_OPTION	 =  NAMESTRING						/CHECKNAME                      
+    21			 | 
+
+    22	STATEMENT	 =  LOCAL_ASSIGNMENT
+    23			 |  CONSTANT_STATEMENT
+    24			 |  ENTRY_STATEMENT
+    25			 |  AGGREGATE_STATEMENT
+    26			 |  ITEM_STATEMENT
+    27			 |  DECLARE_STATEMENT
+    28			 |  IFSYMBOL_STATEMENT
+    29			 |  CONDITIONAL_STATEMENT
+    30			 |  LITERAL_STATEMENT
+    31			 |  READ_STATEMENT ';'
+    32			 |  comment						/COMMENTNOD                     
+    33			 |  INCLUDE_CLAUSE ';'
+    34			 |  errormark ';'					/SYNERROR                       
+    35			 |  ';'
+
+    36	INCLUDE_CLAUSE	 =  include INCLUDE_NAME STAT_LIST eof			/RESETTEXT                      
+    37			 |  include INCLUDE_NAME eof				/RESETTEXT                      
+
+    38	INCLUDE_NAME	 =  string_literal					/INCLUDETEXT                    
+
+    39	READ_STATEMENT	 =  read string_literal					/READFILE                       
+
+    40	STAT_LIST	 =  STAT_LIST STATEMENT
+    41			 |  STATEMENT
+
+    42	LOCAL_ASSIGNMENT =  LOCAL_SYMBOL '=' EXPRESSION ';'			/LOCALASN                       
+
+    43	LOCAL_SYMBOL	 =  local_name						/SAVELOCALNAME                  
+
+    44	CONSTANT_STATEMENT =  CONSTANT_KEY CONSTANT_BODY ';'			/ENDCONST                       
+
+    45	CONSTANT_KEY	 =  constant						/STARTCONST                     
+
+    46	CONSTANT_BODY	 =  CONSTANT_PHRASE
+    47			 |  CONSTANT_BODY ',' COMMENT_LIST CONSTANT_PHRASE
+
+    48	CONSTANT_PHRASE	 =  NAME_OR_LIST equals VALUE_OR_STRING			/MAKCSTNOD                      
+
+    49	VALUE_OR_STRING	 =  CONSTANT_VALUE CONSTANT_OPTIONS
+    50			 |  string STRING_VALUE STRING_OPTIONS
+
+    51	COMMENT_LIST	 =  COMMENT_LIST comment				/COMMENTNOD                     
+    52			 | 
+
+    53	NAME_OR_LIST	 =  C_NAME_1
+    54			 |  '(' COMMENT_LIST NAME_LIST ')' C_COMMENT_LIST
+    55			 |  '(' COMMENT_LIST NAME_LIST C_COMMA2 ')'
+			    C_COMMENT_LIST
+
+    56	NAME_LIST	 =  C_NAME_1
+    57			 |  C_COMMA1 C_NAME_1
+    58			 |  NAME_LIST C_COMMA2 C_NAME_1
+
+    59	C_NAME_1	 =  C_NAME C_COMMENT_LIST
+
+    60	C_NAME		 =  NAMESTRING						/MAKNAMLIS                      
+
+    61	C_COMMA1	 =  C_COMMA						/NULLNAME                       
+    62			 |  C_COMMA1 C_COMMA					/NULLNAME                       
+
+    63	C_COMMA2	 =  C_COMMA
+    64			 |  C_COMMA2 C_COMMA					/NULLNAME                       
+
+    65	C_COMMA		 =  ',' C_COMMENT_LIST
+
+    66	C_COMMENT_LIST	 =  C_COMMENT_LIST comment				/SETNAMCOM                      
+    67			 | 
+
+    68	CONSTANT_VALUE	 =  EXPRESSION						/SETCONVAL                      
+
+    69	CONSTANT_OPTIONS =  CONSTANT_OPTIONS increment EXPRESSION		/SETINCR                        
+    70			 |  CONSTANT_OPTIONS prefix NAMESTRING			/SAVEPREFIX                     
+    71			 |  CONSTANT_OPTIONS tag NAMESTRING			/SAVETAG                        
+    72			 |  CONSTANT_OPTIONS counter local_name			/SAVECOUNTER                    
+    73			 |  CONSTANT_OPTIONS typename TYPESTRING		/SAVETYPENAM                    
+    74			 | 
+
+    75	STRING_VALUE	 =  string_literal					/SETCONSTR                      
+
+    76	STRING_OPTIONS	 =  STRING_OPTIONS prefix NAMESTRING			/SAVEPREFIX                     
+    77			 |  STRING_OPTIONS tag NAMESTRING			/SAVETAG                        
+    78			 | 
+
+    79	NAMESTRING	 =  name						/CHECKNULL                      
+    80			 |  string_literal
+
+    81	ENTRY_STATEMENT	 =  ENTRY_CLAUSE ENTRY_OPTION ';'			/SETLINENO_CHECKLIST            
+
+    82	ENTRY_CLAUSE	 =  entry NAMESTRING					/MAKENTNOD                      
+
+    83	ENTRY_OPTION	 =  ENTRY_OPTION PARAMETER_KEYWORD '(' PARAM_LIST ')'	/POPPARENT                      
+    84			 |  ENTRY_OPTION RETURN_KEYWORD RET_DATA_TYPE
+			    RETURN_NAME_OPTION
+    85			 |  ENTRY_OPTION RETURN_KEYWORD RET_DATA_TYPE
+			    RETURN_NAME_OPTION comment				/COMMENTNOD                     
+    86			 |  ENTRY_OPTION variable				/SETVAROPT                      
+    87			 |  ENTRY_OPTION typename TYPESTRING			/SETTYPNAME                     
+    88			 |  ENTRY_OPTION alias NAMESTRING			/SETALIAS                       
+    89			 |  ENTRY_OPTION linkage NAMESTRING			/SETLINK                        
+    90			 | 
+
+    91	PARAMETER_KEYWORD =  parameter						/SETPARM                        
+
+    92	RETURN_KEYWORD	 =  returns						/SETRETURN                      
+
+    93	RET_DATA_TYPE	 =  DATA_OR_USER_TYPE
+    94			 |  void						/SETVOID                        
+
+    95	RETURN_NAME_OPTION =  named NAMESTRING					/SETRETNAME                     
+    96			 | 
+
+    97	PARAM_LIST	 =  COMMENT_LIST P1 PARAM P_OPT P2
+    98			 |  PARAM_LIST ',' COMMENT_LIST P1 PARAM P_OPT P2
+
+    99	P1		 = 							/MAKPARNOD                      
+
+   100	P2		 = 							/SETDEFPRMATT                   
+
+   101	PARAM		 =  DATA_OR_USER_TYPE
+   102			 |  any							/SETANY                         
+
+   103	P_OPT		 =  P_OPT value						/SETVALOPT                      
+   104			 |  P_OPT descriptor					/SETDESCRIP                     
+   105			 |  P_OPT rtl_str_desc					/SETRTLSTRDESC                  
+   106			 |  P_OPT dimension DIMEN_EXPR
+   107			 |  P_OPT in						/SETIN                          
+   108			 |  P_OPT out						/SETOUT                         
+   109			 |  P_OPT list						/SETLIST                        
+   110			 |  P_OPT named NAMESTRING				/SETPNAME                       
+   111			 |  P_OPT default EXPRESSION				/SETDEFAULT                     
+   112			 |  P_OPT optional					/SETOPTIONAL                    
+   113			 |  P_OPT reference					/SETREF                         
+   114			 |  P_OPT comment					/COMMENTNOD                     
+   115			 |  P_OPT typename TYPESTRING				/SETTYPNAME                     
+   116			 | 
+
+   117	TYPESTRING	 =  name						/CHECKNULL                      
+   118			 |  string_literal
+
+   119	DIMEN_EXPR	 =  EXPRESSION						/SETDIMEN                       
+   120			 |  LODIMEN ':' EXPRESSION				/SETHIDIM                       
+   121			 |  '*'							/SETVARDIM                      
+
+   122	LODIMEN		 =  EXPRESSION						/SETLODIM                       
+
+   123	DATA_TYPE	 =  byte SIGN_OPTION					/SETBYTE                        
+   124			 |  word SIGN_OPTION					/SETWORD                        
+   125			 |  longword SIGN_OPTION				/SETLONG                        
+   126			 |  quadword SIGN_OPTION				/SETQUAD                        
+   127			 |  octaword SIGN_OPTION				/SETOCTA                        
+   128			 |  f_floating COMPLEX_OPTION				/SETFLOAT                       
+   129			 |  d_floating COMPLEX_OPTION				/SETDOUBLE                      
+   130			 |  g_floating COMPLEX_OPTION				/SETGRAND                       
+   131			 |  h_floating COMPLEX_OPTION				/SETHUGE                        
+   132			 |  decimal precision '(' PREC ',' SCALE ')'		/SETDEC                         
+   133			 |  bitfield VIELD_OPTIONS				/SETVIELD                       
+   134			 |  character CHAR_OPTIONS				/SETCHAR                        
+   135			 |  boolean						/SETBOOL                        
+   136			 |  address OBJECT_OPTION				/SETADDR                        
+   137			 |  pointer OBJECT_OPTION				/SETPS                          
+   138			 |  pointer_long OBJECT_OPTION				/SETPL                          
+   139			 |  pointer_quad OBJECT_OPTION				/SETPQ                          
+   140			 |  pointer_hw OBJECT_OPTION				/SETPH                          
+   141			 |  integer_byte SIGN_OPTION				/SETIB                          
+   142			 |  integer_word SIGN_OPTION				/SETIW                          
+   143			 |  integer_long SIGN_OPTION				/SETIL                          
+   144			 |  integer_quad SIGN_OPTION				/SETIQ                          
+   145			 |  integer_hw SIGN_OPTION				/SETIH                          
+   146			 |  integer SIGN_OPTION					/SETINT                         
+   147			 |  hardware_address OBJECT_OPTION			/SETHWADR                       
+   148			 |  hardware_integer SIGN_OPTION			/SETHWINT                       
+
+   149	OBJECT_OPTION	 =  OBJ_PAREN OBJECT_TYPE BASE_OPTION ')'		/POPPARENT                      
+   150			 | 
+
+   151	OBJ_PAREN	 =  '('							/MAKOBJNOD                      
+
+   152	OBJECT_TYPE	 =  DATA_OR_USER_TYPE DIMENSION_OPTION
+   153			 |  ENTRY_OBJECT ENTRY_OPTION				/POPPARENT                      
+
+   154	ENTRY_OBJECT	 =  entry						/SETENTRY                       
+
+   155	BASE_OPTION	 =  BASEALIGN_OPTION
+   156			 | 
+
+   157	SIGN_OPTION	 =  signed						/SETSIGNED                      
+   158			 |  unsigned						/SETUNSIGN                      
+   159			 | 
+
+   160	COMPLEX_OPTION	 =  complex						/SETCOMPLEX                     
+   161			 | 
+
+   162	PREC		 =  EXPRESSION						/SETPREC                        
+
+   163	SCALE		 =  EXPRESSION						/SETSCALE                       
+
+   164	VIELD_OPTIONS	 =  VIELD_OPTIONS mask					/SETMASK                        
+   165			 |  VIELD_OPTIONS length EXPRESSION			/SETLENGTH                      
+   166			 |  VIELD_OPTIONS signed				/SETSIGNED                      
+   167			 |  VIELD_OPTIONS unsigned				/SETUNSIGN                      
+   168			 | 
+
+   169	CHAR_OPTIONS	 =  CHAR_OPTIONS varying				/SETCHRVAR                      
+   170			 |  CHAR_OPTIONS length LENGTH_EXPR
+   171			 | 
+
+   172	LENGTH_EXPR	 =  '*'							/SETUNKLENGTH                   
+   173			 |  EXPRESSION						/SETLENGTH                      
+
+   174	DIMENSION_OPTION =  dimension DIMEN_EXPR
+   175			 | 
+
+   176	AGGREGATE_STATEMENT =  AGGREGATE_DCL AGGREGATE_BODY AGGREGATE_END
+
+   177	AGGREGATE_DCL	 =  AGGREGATE_CLAUSE AGGREGATE_TYPE IMPL_UNION_DATATYPE
+			    AGGR_OPTIONS ';'					/MAKECHILD                      
+
+   178	AGGREGATE_CLAUSE =  aggregate NAMESTRING				/MAKITMNOD                      
+
+   179	AGGREGATE_TYPE	 =  structure						/SETSTRUC                       
+   180			 |  union						/SETUNION                       
+
+   181	IMPL_UNION_DATATYPE =  DATA_TYPE
+   182			 | 
+
+   183	AGGR_OPTIONS	 =  AGGR_OPTIONS common					/SETCOMMON                      
+   184			 |  AGGR_OPTIONS global					/SETGLOBAL                      
+   185			 |  AGGR_OPTIONS typedef				/SETTYPEDEF                     
+   186			 |  AGGR_OPTIONS align					/SETALIGN                       
+   187			 |  AGGR_OPTIONS noalign				/SETNOALIGN                     
+   188			 |  AGGR_OPTIONS BASEALIGN_OPTION
+   189			 |  AGGR_OPTIONS prefix NAMESTRING			/SETPREFIX                      
+   190			 |  AGGR_OPTIONS tag NAMESTRING				/SETTAG                         
+   191			 |  AGGR_OPTIONS dimension DIMEN_EXPR
+   192			 |  AGGR_OPTIONS origin NAMESTRING			/SETORIGIN                      
+   193			 |  AGGR_OPTIONS based NAMESTRING			/BASEDPTR                       
+   194			 |  AGGR_OPTIONS based
+   195			 |  AGGR_OPTIONS marker NAMESTRING			/SETMARK                        
+   196			 |  AGGR_OPTIONS fill					/SETFILL                        
+   197			 | 
+
+   198	AGGREGATE_BODY	 =  AGGREGATE_BODY AGGREGATE_MEMBER
+   199			 |  AGGREGATE_BODY LOCAL_ASSIGNMENT
+   200			 |  AGGREGATE_BODY CONSTANT_STATEMENT
+   201			 |  AGGREGATE_BODY comment				/COMMENTNOD                     
+   202			 |  AGGREGATE_BODY IFSYMBOL_CLAUSE
+   203			 |  AGGREGATE_BODY ';'
+   204			 | 
+
+   205	AGGREGATE_MEMBER =  MEMBER_NAME REST_OF_MEMBER
+   206			 |  errormark ';'					/SYNERROR                       
+
+   207	MEMBER_NAME	 =  NAMESTRING						/MAKITMNOD                      
+
+   208	REST_OF_MEMBER	 =  DATA_OR_USER_TYPE MEMBER_OPTIONS ';'		/ENDMEMBER                      
+   209			 |  SUB_AGG_DCL AGGREGATE_BODY AGGREGATE_END
+
+   210	MEMBER_OPTIONS	 =  MEMBER_OPTIONS prefix NAMESTRING			/SETPREFIX                      
+   211			 |  MEMBER_OPTIONS tag NAMESTRING			/SETTAG                         
+   212			 |  MEMBER_OPTIONS fill					/SETFILL                        
+   213			 |  MEMBER_OPTIONS dimension DIMEN_EXPR
+   214			 |  MEMBER_OPTIONS align				/SETALIGN                       
+   215			 |  MEMBER_OPTIONS noalign				/SETNOALIGN                     
+   216			 |  MEMBER_OPTIONS BASEALIGN_OPTION
+   217			 | 
+
+   218	SUB_AGG_DCL	 =  AGGREGATE_TYPE IMPL_UNION_DATATYPE MEMBER_OPTIONS
+			    ';'							/MAKECHILD                      
+
+   219	AGGREGATE_END	 =  'end' NAME_OPTION ';'				/AGGEND                         
+   220			 |  errormark 'end' NAME_OPTION ';'			/SYNERROR                       
+
+   221	IFSYMBOL_CLAUSE	 =  IFSYMBOL_START ';' AGGREGATE_BODY
+			    ELSE_IFSYMBOL_CLAUSE ELSE_SYMBOL_CLAUSE
+			    IFSYMBOL_END ';'
+
+   222	ELSE_IFSYMBOL_CLAUSE =  ELSE_IFSYMBOL_CLAUSE ELSE_IFSYMBOL_START ';'
+			    AGGREGATE_BODY
+   223			 | 
+
+   224	ELSE_SYMBOL_CLAUSE =  ELSE_SYMBOL ';' AGGREGATE_BODY
+   225			 | 
+
+   226	IFSYMBOL_STATEMENT =  IFSYMBOL_START ';' MODULE_BODY
+			    ELSE_IFSYMBOL_STATEMENT ELSE_SYMBOL_STATEMENT
+			    IFSYMBOL_END ';'
+
+   227	ELSE_IFSYMBOL_STATEMENT =  ELSE_IFSYMBOL_STATEMENT ELSE_IFSYMBOL_START
+			    ';' MODULE_BODY
+   228			 | 
+
+   229	ELSE_SYMBOL_STATEMENT =  ELSE_SYMBOL ';' MODULE_BODY
+   230			 | 
+
+   231	IFSYMBOL_START	 =  ifsymbol NAMESTRING					/IFSYMBOL_START                 
+
+   232	ELSE_IFSYMBOL_START =  else_ifsymbol NAMESTRING				/IFSYMBOL_ELSEIF                
+
+   233	ELSE_SYMBOL	 =  else						/IFSYMBOL_ELSE                  
+
+   234	IFSYMBOL_END	 =  end_ifsymbol					/IFSYMBOL_END                   
+
+   235	ITEM_STATEMENT	 =  ITEM_CLAUSE DATA_OR_USER_TYPE ITEM_OPTIONS ';'	/ENDITEM                        
+
+   236	ITEM_CLAUSE	 =  item NAMESTRING					/MAKITMNOD                      
+
+   237	ITEM_OPTIONS	 =  ITEM_OPTIONS common					/SETCOMMON                      
+   238			 |  ITEM_OPTIONS global					/SETGLOBAL                      
+   239			 |  ITEM_OPTIONS typedef				/SETTYPEDEF                     
+   240			 |  ITEM_OPTIONS prefix NAMESTRING			/SETPREFIX                      
+   241			 |  ITEM_OPTIONS tag NAMESTRING				/SETTAG                         
+   242			 |  ITEM_OPTIONS dimension DIMEN_EXPR
+   243			 |  ITEM_OPTIONS BASEALIGN_OPTION
+   244			 | 
+
+   245	DATA_OR_USER_TYPE =  DATA_TYPE
+   246			 |  USER_TYPENAME SIZEOF_CLAUSE_OPT			/SETUSER                        
+
+   247	USER_TYPENAME	 =  NAMESTRING						/SAVEUSERNAME                   
+
+   248	SIZEOF_CLAUSE_OPT =  SIZEOF_CLAUSE
+   249			 | 
+
+   250	SIZEOF_CLAUSE	 =  SIZEOF_KEYWORD SIZEOF_OPTION			/ENDSIZEOF                      
+
+   251	SIZEOF_KEYWORD	 =  sizeof						/SETSIZEOF                      
+
+   252	SIZEOF_OPTION	 =  DATA_OR_USER_TYPE
+   253			 |  '(' EXPRESSION ')'					/SETSIZEXPR                     
+
+   254	BASEALIGN_OPTION =  BASEALIGN_KEY DATA_OR_USER_TYPE			/SETBASETYPE                    
+   255			 |  BASEALIGN_KEY '(' EXPRESSION ')'			/SETBASEEXPR                    
+
+   256	BASEALIGN_KEY	 =  basealign						/SETBASEALIGN                   
+
+   257	DECLARE_STATEMENT =  DECL_CLAUSE DECL_BODY DECL_OPTIONS			/SETDECL                        
+
+   258	DECL_CLAUSE	 =  declare USER_TYPENAME				/MAKITMNOD                      
+
+   259	DECL_BODY	 =  SIZEOF_CLAUSE					/SETUSER                        
+
+   260	DECL_OPTIONS	 =  DECL_OPTIONS prefix NAMESTRING			/SETPREFIX                      
+   261			 |  DECL_OPTIONS tag NAMESTRING				/SETTAG                         
+   262			 | 
+
+   263	CONDITIONAL_STATEMENT =  COND1 COND2 MODULE_BODY end_iflanguage
+			    LANG_LIST_OPT					/ENDCOND                        
+
+   264	COND1		 =  iflanguage						/STARTCOND                      
+
+   265	COND2		 =  LANGUAGE_LIST					/POPCOND                        
+
+   266	LANGUAGE_LIST	 =  LANG_NAME
+   267			 |  LANGUAGE_LIST LANG_NAME
+
+   268	LANG_NAME	 =  NAMESTRING						/CONDOBJ                        
+
+   269	LANG_LIST_OPT	 =  LANG_LIST_OPT NAMESTRING				/MARKLANG                       
+   270			 | 
+
+   271	LITERAL_STATEMENT =  LITERAL_KEYWORD STRINGLIST end_literal		/ENDLIT                         
+
+   272	LITERAL_KEYWORD	 =  literal ';'						/STARTLIT                       
+
+   273	STRINGLIST	 =  STRINGLIST string_literal				/MAKLITNOD                      
+   274			 | 
+
+   275	EXPRESSION	 =  EXPRESSION '&' EXPRESSION_1				/ANDTERMS                       
+   276			 |  EXPRESSION_1
+
+   277	EXPRESSION_1	 =  EXPRESSION_1 '!' EXPRESSION_2			/ORTERMS                        
+   278			 |  EXPRESSION_2
+
+   279	EXPRESSION_2	 =  EXPRESSION_2 '@' EXPRESSION_3			/SHIFTERMS                      
+   280			 |  EXPRESSION_3
+
+   281	EXPRESSION_3	 =  EXPRESSION_3 '+' EXPRESSION_4			/ADDTERMS                       
+   282			 |  EXPRESSION_3 '-' EXPRESSION_4			/SUBTERMS                       
+   283			 |  EXPRESSION_4
+
+   284	EXPRESSION_4	 =  EXPRESSION_4 '*' EXPRESSION_5			/MULTERMS                       
+   285			 |  EXPRESSION_4 '/' EXPRESSION_5			/DIVTERMS                       
+   286			 |  EXPRESSION_5
+
+   287	EXPRESSION_5	 =  '+' EXPRESSION_6					/PLUSTERM                       
+   288			 |  '-' EXPRESSION_6					/MINUSTERM                      
+   289			 |  EXPRESSION_6
+
+   290	EXPRESSION_6	 =  numeric						/PUSHTERM                       
+   291			 |  local_name						/PUSHLOCAL                      
+   292			 |  NAMESTRING						/PUSHCONST                      
+   293			 |  '.'							/PUSHDOT                        
+   294			 |  '^'							/PUSHCIRC                       
+   295			 |  ':'							/PUSHCOLON                      
+   296			 |  '(' EXPRESSION ')'
+ 
+                      Cross Reference Listing
+                      ----- --------- -------
+      Terminals
+
+
+ '!', T_EXCLAMATION	= 60
+ used	277	
+
+ '&', T_AMPERSAND	= 61
+ used	275	
+
+ '(', T_L_PAREN	= 62
+ used	54	55	83	132	151	253	255	296	
+
+ ')', T_R_PAREN	= 63
+ used	54	55	83	132	149	253	255	296	
+
+ '*', T_STAR	= 64
+ used	121	172	284	
+
+ '+', T_PLUS	= 65
+ used	281	287	
+
+ ',', T_COMMA	= 66
+ used	47	65	98	132	
+
+ '-', T_MINUS	= 67
+ used	282	288	
+
+ '.', T_DOT	= 68
+ used	293	
+
+ '/', T_SLASH	= 69
+ used	285	
+
+ ':', T_COLON	= 70
+ used	120	295	
+
+ ';', T_SEMICOLON	= 71
+ used	11	18	19	31	33	34	35	42	44	81	177	
+ 		203	206	208	218	219	220	221	221	222	224	
+ 		226	226	227	229	235	272	
+
+ '=', T_EQUAL	= 72
+ used	42	
+
+ '@', T_AT	= 73
+ used	279	
+
+ '^', T_CIRCUMFLEX	= 74
+ used	294	
+
+ 'end', T_END	= 8
+ used	219	220	
+
+ address, T_ADDRESS	= 24
+ used	136	
+
+ aggregate, T_AGGREGATE	= 6
+ used	178	
+
+ alias, T_ALIAS	= 56
+ used	88	
+
+ align, T_ALIGN	= 109
+ used	186	214	
+
+ any, T_ANY	= 40
+ used	102	
+
+ basealign, T_BASEALIGN	= 111
+ used	256	
+
+ based, T_BASED	= 54
+ used	193	194	
+
+ bitfield, T_BITFIELD	= 36
+ used	133	
+
+ boolean, T_BOOLEAN	= 25
+ used	135	
+
+ byte, T_BYTE	= 26
+ used	123	
+
+ character, T_CHARACTER	= 27
+ used	134	
+
+ comment, T_COMMENT	= 1
+ used	10	32	51	66	85	114	201	
+
+ common, T_COMMON	= 14
+ used	183	237	
+
+ complex, T_COMPLEX	= 84
+ used	160	
+
+ constant, T_CONSTANT	= 7
+ used	45	
+
+ counter, T_COUNTER	= 49
+ used	72	
+
+ d_floating, T_D_FLOATING	= 29
+ used	129	
+
+ decimal, T_DECIMAL	= 28
+ used	132	
+
+ declare, T_DECLARE	= 88
+ used	258	
+
+ default, T_DEFAULT	= 57
+ used	111	
+
+ descriptor, T_DESCRIPTOR	= 48
+ used	104	
+
+ dimension, T_DIMENSION	= 15
+ used	106	174	191	213	242	
+
+ else, T_ELSE	= 112
+ used	233	
+
+ else_iflanguage, T_ELSE_IFLANGUAGE	= 114
+ used	
+
+ else_ifsymbol, T_ELSE_IFSYMBOL	= 113
+ used	232	
+
+ end_iflanguage, T_END_IFLANGUAGE	= 90
+ used	263	
+
+ end_ifsymbol, T_END_IFSYMBOL	= 96
+ used	234	
+
+ end_literal, T_END_LITERAL	= 92
+ used	271	
+
+ end_module, T_END_MODULE	= 9
+ used	18	19	
+
+ entry, T_ENTRY	= 10
+ used	82	154	
+
+ eof, T_EOF	= 76
+ used	4	5	36	37	
+
+ eol, T_EOL	= 75
+ used	
+
+ equals, T_EQUALS	= 13
+ used	48	
+
+ errormark, T_ERRORMARK	= 108
+ used	5	13	19	34	206	220	
+
+ f_floating, T_F_FLOATING	= 30
+ used	128	
+
+ fill, T_FILL	= 55
+ used	196	212	
+
+ g_floating, T_G_FLOATING	= 31
+ used	130	
+
+ global, T_GLOBAL	= 22
+ used	184	238	
+
+ goalsy, GOALSY	= 0
+ used	1	
+
+ h_floating, T_H_FLOATING	= 32
+ used	131	
+
+ hardware_address, T_HARDWARE_ADDRESS	= 97
+ used	147	
+
+ hardware_integer, T_HARDWARE_INTEGER	= 98
+ used	148	
+
+ ident, T_IDENT	= 53
+ used	14	
+
+ iflanguage, T_IFLANGUAGE	= 89
+ used	264	
+
+ ifsymbol, T_IFSYMBOL	= 95
+ used	231	
+
+ in, T_IN	= 50
+ used	107	
+
+ include, T_INCLUDE	= 77
+ used	36	37	
+
+ increment, T_INCREMENT	= 18
+ used	69	
+
+ integer, T_INTEGER	= 94
+ used	146	
+
+ integer_byte, T_INTEGER_BYTE	= 103
+ used	141	
+
+ integer_hw, T_INTEGER_HW	= 107
+ used	145	
+
+ integer_long, T_INTEGER_LONG	= 105
+ used	143	
+
+ integer_quad, T_INTEGER_QUAD	= 106
+ used	144	
+
+ integer_word, T_INTEGER_WORD	= 104
+ used	142	
+
+ item, T_ITEM	= 11
+ used	236	
+
+ length, T_LENGTH	= 41
+ used	165	170	
+
+ linkage, T_LINKAGE	= 59
+ used	89	
+
+ list, T_LIST	= 82
+ used	109	
+
+ literal, T_LITERAL	= 91
+ used	272	
+
+ local_name, T_LOCAL_NAME	= 2
+ used	43	72	291	
+
+ longword, T_LONGWORD	= 33
+ used	125	
+
+ marker, T_MARKER	= 80
+ used	195	
+
+ mask, T_MASK	= 42
+ used	164	
+
+ module, T_MODULE	= 12
+ used	12	13	
+
+ name, T_NAME	= 3
+ used	79	117	
+
+ named, T_NAMED	= 52
+ used	95	110	
+
+ noalign, T_NOALIGN	= 110
+ used	187	215	
+
+ numeric, T_NUMERIC	= 4
+ used	290	
+
+ octaword, T_OCTAWORD	= 34
+ used	127	
+
+ optional, T_OPTIONAL	= 79
+ used	112	
+
+ origin, T_ORIGIN	= 47
+ used	192	
+
+ out, T_OUT	= 51
+ used	108	
+
+ parameter, T_PARAMETER	= 19
+ used	91	
+
+ pointer, T_POINTER	= 101
+ used	137	
+
+ pointer_hw, T_POINTER_HW	= 99
+ used	140	
+
+ pointer_long, T_POINTER_LONG	= 100
+ used	138	
+
+ pointer_quad, T_POINTER_QUAD	= 102
+ used	139	
+
+ precision, T_PRECISION	= 43
+ used	132	
+
+ prefix, T_PREFIX	= 16
+ used	70	76	189	210	240	260	
+
+ quadword, T_QUADWORD	= 35
+ used	126	
+
+ read, T_READ	= 93
+ used	39	
+
+ reference, T_REFERENCE	= 58
+ used	113	
+
+ returns, T_RETURNS	= 20
+ used	92	
+
+ rtl_str_desc, T_RTL_STR_DESC	= 83
+ used	105	
+
+ signed, T_SIGNED	= 78
+ used	157	166	
+
+ sizeof, T_SIZEOF	= 87
+ used	251	
+
+ string, T_STRING	= 85
+ used	50	
+
+ string_literal, T_STRING_LITERAL	= 5
+ used	38	39	75	80	118	273	
+
+ structure, T_STRUCTURE	= 38
+ used	179	
+
+ tag, T_TAG	= 17
+ used	71	77	190	211	241	261	
+
+ typedef, T_TYPEDEF	= 46
+ used	185	239	
+
+ typename, T_TYPENAME	= 81
+ used	73	87	115	
+
+ union, T_UNION	= 39
+ used	180	
+
+ unsigned, T_UNSIGNED	= 44
+ used	158	167	
+
+ value, T_VALUE	= 21
+ used	103	
+
+ variable, T_VARIABLE	= 23
+ used	86	
+
+ varying, T_VARYING	= 45
+ used	169	
+
+ void, T_VOID	= 86
+ used	94	
+
+ word, T_WORD	= 37
+ used	124	
+
+     Non Terminals
+
+ ADDLE	= 115
+ defined	1	
+ used	
+
+ AGGREGATE_BODY	= 192
+ defined	198	199	200	201	202	203	204	
+ used	176	198	199	200	201	202	203	209	221	222	224	
+
+ AGGREGATE_CLAUSE	= 194
+ defined	178	
+ used	177	
+
+ AGGREGATE_DCL	= 191
+ defined	177	
+ used	176	
+
+ AGGREGATE_END	= 193
+ defined	219	220	
+ used	176	209	
+
+ AGGREGATE_MEMBER	= 198
+ defined	205	206	
+ used	198	
+
+ AGGREGATE_STATEMENT	= 132
+ defined	176	
+ used	25	
+
+ AGGREGATE_TYPE	= 195
+ defined	179	180	
+ used	177	218	
+
+ AGGR_OPTIONS	= 197
+ defined	183	184	185	186	187	188	189	190	191	192	193	
+ 		194	195	196	197	
+ used	177	183	184	185	186	187	188	189	190	191	192	
+ 		193	194	195	196	
+
+ BASEALIGN_KEY	= 219
+ defined	256	
+ used	254	255	
+
+ BASEALIGN_OPTION	= 189
+ defined	254	255	
+ used	155	188	216	243	
+
+ BASE_OPTION	= 186
+ defined	155	156	
+ used	149	
+
+ CHAR_OPTIONS	= 182
+ defined	169	170	171	
+ used	134	169	170	
+
+ COMMENT_LIST	= 147
+ defined	51	52	
+ used	47	51	54	55	97	98	
+
+ COMPLEX_OPTION	= 178
+ defined	160	161	
+ used	128	129	130	131	
+
+ COND1	= 223
+ defined	264	
+ used	263	
+
+ COND2	= 224
+ defined	265	
+ used	263	
+
+ CONDITIONAL_STATEMENT	= 136
+ defined	263	
+ used	29	
+
+ CONSTANT_BODY	= 145
+ defined	46	47	
+ used	44	47	
+
+ CONSTANT_KEY	= 144
+ defined	45	
+ used	44	
+
+ CONSTANT_OPTIONS	= 151
+ defined	69	70	71	72	73	74	
+ used	49	69	70	71	72	73	
+
+ CONSTANT_PHRASE	= 146
+ defined	48	
+ used	46	47	
+
+ CONSTANT_STATEMENT	= 130
+ defined	44	
+ used	23	200	
+
+ CONSTANT_VALUE	= 150
+ defined	68	
+ used	49	
+
+ C_COMMA	= 160
+ defined	65	
+ used	61	62	63	64	
+
+ C_COMMA1	= 158
+ defined	61	62	
+ used	57	62	
+
+ C_COMMA2	= 157
+ defined	63	64	
+ used	55	58	64	
+
+ C_COMMENT_LIST	= 156
+ defined	66	67	
+ used	54	55	59	65	66	
+
+ C_NAME	= 159
+ defined	60	
+ used	59	
+
+ C_NAME_1	= 154
+ defined	59	
+ used	53	56	57	58	
+
+ DATA_OR_USER_TYPE	= 169
+ defined	245	246	
+ used	93	101	152	208	235	252	254	
+
+ DATA_TYPE	= 176
+ defined	123	124	125	126	127	128	129	130	131	132	133	
+ 		134	135	136	137	138	139	140	141	142	143	
+ 		144	145	146	147	148	
+ used	181	245	
+
+ DECLARE_STATEMENT	= 134
+ defined	257	
+ used	27	
+
+ DECL_BODY	= 221
+ defined	259	
+ used	257	
+
+ DECL_CLAUSE	= 220
+ defined	258	
+ used	257	
+
+ DECL_OPTIONS	= 222
+ defined	260	261	262	
+ used	257	260	261	
+
+ DIMENSION_OPTION	= 187
+ defined	174	175	
+ used	152	
+
+ DIMEN_EXPR	= 174
+ defined	119	120	121	
+ used	106	174	191	213	242	
+
+ ELSE_IFSYMBOL_CLAUSE	= 205
+ defined	222	223	
+ used	221	222	
+
+ ELSE_IFSYMBOL_START	= 208
+ defined	232	
+ used	222	227	
+
+ ELSE_IFSYMBOL_STATEMENT	= 210
+ defined	227	228	
+ used	226	227	
+
+ ELSE_SYMBOL	= 209
+ defined	233	
+ used	224	229	
+
+ ELSE_SYMBOL_CLAUSE	= 206
+ defined	224	225	
+ used	221	
+
+ ELSE_SYMBOL_STATEMENT	= 211
+ defined	229	230	
+ used	226	
+
+ END_MODULE_STATEMENT	= 123
+ defined	18	19	
+ used	8	
+
+ ENTRY_CLAUSE	= 162
+ defined	82	
+ used	81	
+
+ ENTRY_OBJECT	= 188
+ defined	154	
+ used	153	
+
+ ENTRY_OPTION	= 163
+ defined	83	84	85	86	87	88	89	90	
+ used	81	83	84	85	86	87	88	89	153	
+
+ ENTRY_STATEMENT	= 131
+ defined	81	
+ used	24	
+
+ EXPRESSION	= 143
+ defined	275	276	
+ used	42	68	69	111	119	120	122	162	163	165	173	
+ 		253	255	275	296	
+
+ EXPRESSION_1	= 230
+ defined	277	278	
+ used	275	276	277	
+
+ EXPRESSION_2	= 231
+ defined	279	280	
+ used	277	278	279	
+
+ EXPRESSION_3	= 232
+ defined	281	282	283	
+ used	279	280	281	282	
+
+ EXPRESSION_4	= 233
+ defined	284	285	286	
+ used	281	282	283	284	285	
+
+ EXPRESSION_5	= 234
+ defined	287	288	289	
+ used	284	285	286	
+
+ EXPRESSION_6	= 235
+ defined	290	291	292	293	294	295	296	
+ used	287	288	289	
+
+ IFSYMBOL_CLAUSE	= 199
+ defined	221	
+ used	202	
+
+ IFSYMBOL_END	= 207
+ defined	234	
+ used	221	226	
+
+ IFSYMBOL_START	= 204
+ defined	231	
+ used	221	226	
+
+ IFSYMBOL_STATEMENT	= 135
+ defined	226	
+ used	28	
+
+ IMPL_UNION_DATATYPE	= 196
+ defined	181	182	
+ used	177	218	
+
+ INCLUDE_CLAUSE	= 139
+ defined	36	37	
+ used	33	
+
+ INCLUDE_NAME	= 140
+ defined	38	
+ used	36	37	
+
+ ITEM_CLAUSE	= 212
+ defined	236	
+ used	235	
+
+ ITEM_OPTIONS	= 213
+ defined	237	238	239	240	241	242	243	244	
+ used	235	237	238	239	240	241	242	243	
+
+ ITEM_STATEMENT	= 133
+ defined	235	
+ used	26	
+
+ LANGUAGE_LIST	= 226
+ defined	266	267	
+ used	265	267	
+
+ LANG_LIST_OPT	= 225
+ defined	269	270	
+ used	263	269	
+
+ LANG_NAME	= 227
+ defined	268	
+ used	266	267	
+
+ LENGTH_EXPR	= 190
+ defined	172	173	
+ used	170	
+
+ LITERAL_KEYWORD	= 228
+ defined	272	
+ used	271	
+
+ LITERAL_STATEMENT	= 137
+ defined	271	
+ used	30	
+
+ LOCAL_ASSIGNMENT	= 124
+ defined	42	
+ used	9	22	199	
+
+ LOCAL_SYMBOL	= 142
+ defined	43	
+ used	42	
+
+ LODIMEN	= 175
+ defined	122	
+ used	120	
+
+ M1	= 117
+ defined	3	
+ used	2	
+
+ M2	= 118
+ defined	4	5	
+ used	2	
+
+ MEMBER_NAME	= 200
+ defined	207	
+ used	205	
+
+ MEMBER_OPTIONS	= 202
+ defined	210	211	212	213	214	215	216	217	
+ used	208	210	211	212	213	214	215	216	218	
+
+ MODULE_BODY	= 122
+ defined	16	17	
+ used	8	16	226	227	229	263	
+
+ MODULE_DECLARATION	= 120
+ defined	8	9	10	
+ used	6	7	
+
+ MODULE_LIST	= 119
+ defined	6	7	
+ used	4	7	
+
+ MODULE_STATEMENT	= 121
+ defined	11	
+ used	8	
+
+ M_NAME	= 125
+ defined	12	13	
+ used	11	
+
+ M_OPTIONS	= 126
+ defined	14	15	
+ used	11	
+
+ NAMESTRING	= 127
+ defined	79	80	
+ used	12	13	14	20	60	70	71	76	77	82	88	
+ 		89	95	110	178	189	190	192	193	195	207	
+ 		210	211	231	232	236	240	241	247	260	261	
+ 		268	269	292	
+
+ NAME_LIST	= 155
+ defined	56	57	58	
+ used	54	55	58	
+
+ NAME_OPTION	= 129
+ defined	20	21	
+ used	18	19	219	220	
+
+ NAME_OR_LIST	= 148
+ defined	53	54	55	
+ used	48	
+
+ OBJECT_OPTION	= 183
+ defined	149	150	
+ used	136	137	138	139	140	147	
+
+ OBJECT_TYPE	= 185
+ defined	152	153	
+ used	149	
+
+ OBJ_PAREN	= 184
+ defined	151	
+ used	149	
+
+ P1	= 170
+ defined	99	
+ used	97	98	
+
+ P2	= 173
+ defined	100	
+ used	97	98	
+
+ PARAM	= 171
+ defined	101	102	
+ used	97	98	
+
+ PARAMETER_KEYWORD	= 164
+ defined	91	
+ used	83	
+
+ PARAM_LIST	= 165
+ defined	97	98	
+ used	83	98	
+
+ PREC	= 179
+ defined	162	
+ used	132	
+
+ PROGRAM	= 116
+ defined	2	
+ used	1	
+
+ P_OPT	= 172
+ defined	103	104	105	106	107	108	109	110	111	112	113	
+ 		114	115	116	
+ used	97	98	103	104	105	106	107	108	109	110	111	
+ 		112	113	114	115	
+
+ READ_STATEMENT	= 138
+ defined	39	
+ used	31	
+
+ REST_OF_MEMBER	= 201
+ defined	208	209	
+ used	205	
+
+ RETURN_KEYWORD	= 166
+ defined	92	
+ used	84	85	
+
+ RETURN_NAME_OPTION	= 168
+ defined	95	96	
+ used	84	85	
+
+ RET_DATA_TYPE	= 167
+ defined	93	94	
+ used	84	85	
+
+ SCALE	= 180
+ defined	163	
+ used	132	
+
+ SIGN_OPTION	= 177
+ defined	157	158	159	
+ used	123	124	125	126	127	141	142	143	144	145	146	
+ 		148	
+
+ SIZEOF_CLAUSE	= 216
+ defined	250	
+ used	248	259	
+
+ SIZEOF_CLAUSE_OPT	= 215
+ defined	248	249	
+ used	246	
+
+ SIZEOF_KEYWORD	= 217
+ defined	251	
+ used	250	
+
+ SIZEOF_OPTION	= 218
+ defined	252	253	
+ used	250	
+
+ STATEMENT	= 128
+ defined	22	23	24	25	26	27	28	29	30	31	32	
+ 		33	34	35	
+ used	16	40	41	
+
+ STAT_LIST	= 141
+ defined	40	41	
+ used	36	40	
+
+ STRINGLIST	= 229
+ defined	273	274	
+ used	271	273	
+
+ STRING_OPTIONS	= 153
+ defined	76	77	78	
+ used	50	76	77	
+
+ STRING_VALUE	= 152
+ defined	75	
+ used	50	
+
+ SUB_AGG_DCL	= 203
+ defined	218	
+ used	209	
+
+ TYPESTRING	= 161
+ defined	117	118	
+ used	73	87	115	
+
+ USER_TYPENAME	= 214
+ defined	247	
+ used	246	258	
+
+ VALUE_OR_STRING	= 149
+ defined	49	50	
+ used	48	
+
+ VIELD_OPTIONS	= 181
+ defined	164	165	166	167	168	
+ used	133	164	165	166	167	
+
+     Action
+
+ ADDTERMS	= 409
+ used	281	
+
+ AGGEND	= 372
+ used	219	
+
+ ANDTERMS	= 406
+ used	275	
+
+ BASEDPTR	= 359
+ used	193	
+
+ CHECKNAME	= 245
+ used	20	
+
+ CHECKNULL	= 300
+ used	79	117	
+
+ COMMENTNOD	= 362
+ used	10	32	51	85	114	201	
+
+ CONDOBJ	= 401
+ used	268	
+
+ DIVTERMS	= 412
+ used	285	
+
+ ENDCOND	= 398
+ used	263	
+
+ ENDCONST	= 254
+ used	44	
+
+ ENDITEM	= 378
+ used	235	
+
+ ENDLIT	= 403
+ used	271	
+
+ ENDMEMBER	= 365
+ used	208	
+
+ ENDMOD	= 243
+ used	18	
+
+ ENDSIZEOF	= 387
+ used	250	
+
+ IFSYMBOL_ELSE	= 376
+ used	233	
+
+ IFSYMBOL_ELSEIF	= 375
+ used	232	
+
+ IFSYMBOL_END	= 377
+ used	234	
+
+ IFSYMBOL_START	= 374
+ used	231	
+
+ INCLUDETEXT	= 250
+ used	38	
+
+ INITIALIZE	= 236
+ used	3	
+
+ LOCALASN	= 252
+ used	42	
+
+ MAKCSTNOD	= 256
+ used	48	
+
+ MAKECHILD	= 371
+ used	11	177	218	
+
+ MAKENTNOD	= 274
+ used	82	
+
+ MAKITMNOD	= 394
+ used	178	207	236	258	
+
+ MAKLITNOD	= 405
+ used	273	
+
+ MAKMODNOD	= 240
+ used	12	
+
+ MAKNAMLIS	= 258
+ used	60	
+
+ MAKOBJNOD	= 332
+ used	151	
+
+ MAKPARNOD	= 285
+ used	99	
+
+ MARKLANG	= 402
+ used	269	
+
+ MINUSTERM	= 414
+ used	288	
+
+ MULTERMS	= 411
+ used	284	
+
+ NULLNAME	= 261
+ used	61	62	64	
+
+ ORTERMS	= 407
+ used	277	
+
+ PLUSTERM	= 413
+ used	287	
+
+ POPCOND	= 400
+ used	265	
+
+ POPPARENT	= 333
+ used	83	149	153	
+
+ PUSHCIRC	= 419
+ used	294	
+
+ PUSHCOLON	= 420
+ used	295	
+
+ PUSHCONST	= 417
+ used	292	
+
+ PUSHDOT	= 418
+ used	293	
+
+ PUSHLOCAL	= 416
+ used	291	
+
+ PUSHTERM	= 415
+ used	290	
+
+ READFILE	= 251
+ used	39	
+
+ RESETTEXT	= 249
+ used	36	37	
+
+ SAVECOUNTER	= 267
+ used	72	
+
+ SAVELOCALNAME	= 253
+ used	43	
+
+ SAVEPREFIX	= 270
+ used	70	76	
+
+ SAVETAG	= 271
+ used	71	77	
+
+ SAVETYPENAM	= 268
+ used	73	
+
+ SAVEUSERNAME	= 386
+ used	247	
+
+ SETADDR	= 318
+ used	136	
+
+ SETALIAS	= 279
+ used	88	
+
+ SETALIGN	= 369
+ used	186	214	
+
+ SETANY	= 287
+ used	102	
+
+ SETBASEALIGN	= 392
+ used	256	
+
+ SETBASEEXPR	= 391
+ used	255	
+
+ SETBASETYPE	= 390
+ used	254	
+
+ SETBOOL	= 317
+ used	135	
+
+ SETBYTE	= 305
+ used	123	
+
+ SETCHAR	= 316
+ used	134	
+
+ SETCHRVAR	= 344
+ used	169	
+
+ SETCOMMON	= 380
+ used	183	237	
+
+ SETCOMPLEX	= 337
+ used	160	
+
+ SETCONSTR	= 269
+ used	75	
+
+ SETCONVAL	= 263
+ used	68	
+
+ SETDEC	= 314
+ used	132	
+
+ SETDECL	= 393
+ used	257	
+
+ SETDEFAULT	= 295
+ used	111	
+
+ SETDEFPRMATT	= 286
+ used	100	
+
+ SETDESCRIP	= 289
+ used	104	
+
+ SETDIMEN	= 301
+ used	119	
+
+ SETDOUBLE	= 311
+ used	129	
+
+ SETENTRY	= 334
+ used	154	
+
+ SETFILL	= 368
+ used	196	212	
+
+ SETFLOAT	= 310
+ used	128	
+
+ SETGLOBAL	= 381
+ used	184	238	
+
+ SETGRAND	= 312
+ used	130	
+
+ SETHIDIM	= 302
+ used	120	
+
+ SETHUGE	= 313
+ used	131	
+
+ SETHWADR	= 329
+ used	147	
+
+ SETHWINT	= 330
+ used	148	
+
+ SETIB	= 323
+ used	141	
+
+ SETIDENT	= 242
+ used	14	
+
+ SETIH	= 327
+ used	145	
+
+ SETIL	= 325
+ used	143	
+
+ SETIN	= 291
+ used	107	
+
+ SETINCR	= 264
+ used	69	
+
+ SETINT	= 328
+ used	146	
+
+ SETIQ	= 326
+ used	144	
+
+ SETIW	= 324
+ used	142	
+
+ SETLENGTH	= 346
+ used	165	173	
+
+ SETLINENO_CHECKLIST	= 273
+ used	81	
+
+ SETLINK	= 280
+ used	89	
+
+ SETLIST	= 293
+ used	109	
+
+ SETLODIM	= 304
+ used	122	
+
+ SETLONG	= 307
+ used	125	
+
+ SETMARK	= 360
+ used	195	
+
+ SETMASK	= 340
+ used	164	
+
+ SETNAMCOM	= 262
+ used	66	
+
+ SETNOALIGN	= 370
+ used	187	215	
+
+ SETOCTA	= 309
+ used	127	
+
+ SETOPTIONAL	= 296
+ used	112	
+
+ SETORIGIN	= 358
+ used	192	
+
+ SETOUT	= 292
+ used	108	
+
+ SETPARM	= 281
+ used	91	
+
+ SETPH	= 322
+ used	140	
+
+ SETPL	= 320
+ used	138	
+
+ SETPNAME	= 294
+ used	110	
+
+ SETPQ	= 321
+ used	139	
+
+ SETPREC	= 338
+ used	162	
+
+ SETPREFIX	= 396
+ used	189	210	240	260	
+
+ SETPS	= 319
+ used	137	
+
+ SETQUAD	= 308
+ used	126	
+
+ SETREF	= 297
+ used	113	
+
+ SETRETNAME	= 284
+ used	95	
+
+ SETRETURN	= 282
+ used	92	
+
+ SETRTLSTRDESC	= 290
+ used	105	
+
+ SETSCALE	= 339
+ used	163	
+
+ SETSIGNED	= 342
+ used	157	166	
+
+ SETSIZEOF	= 388
+ used	251	
+
+ SETSIZEXPR	= 389
+ used	253	
+
+ SETSTRUC	= 349
+ used	179	
+
+ SETTAG	= 397
+ used	190	211	241	261	
+
+ SETTYPEDEF	= 382
+ used	185	239	
+
+ SETTYPNAME	= 299
+ used	87	115	
+
+ SETUNION	= 350
+ used	180	
+
+ SETUNKLENGTH	= 345
+ used	172	
+
+ SETUNSIGN	= 343
+ used	158	167	
+
+ SETUSER	= 395
+ used	246	259	
+
+ SETVALOPT	= 288
+ used	103	
+
+ SETVARDIM	= 303
+ used	121	
+
+ SETVAROPT	= 277
+ used	86	
+
+ SETVIELD	= 315
+ used	133	
+
+ SETVOID	= 283
+ used	94	
+
+ SETWORD	= 306
+ used	124	
+
+ SHIFTERMS	= 408
+ used	279	
+
+ STARTCOND	= 399
+ used	264	
+
+ STARTCONST	= 255
+ used	45	
+
+ STARTLIT	= 404
+ used	272	
+
+ SUBTERMS	= 410
+ used	282	
+
+ SYNERROR	= 373
+ used	5	13	19	34	206	220	
+ Lookahead computation:
+ Follow
+  a (state number)		=    0
+  b (reduction transition)	=  000ABA5
+ 					Dump of transition @  000ABA5
+ 					  next (transition)	=  0000000
+ 					  nextstate (ptr)	=  0000000
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    M1		 = . 
+
+ *******
+ Reverse
+  a (state number)		=    0
+  b (reduction transition)	=  000ABA5
+  n				=    0
+ 					Dump of transition @  000ABA5
+ 					  next (transition)	=  0000000
+ 					  nextstate (ptr)	=  0000000
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    M1		 = . 
+ Maketran:  Transition to state    3 via transition @  000ABA4
+ 					Dump of transition @  000ABA4
+ 					  next (transition)	=  000ABA5
+ 					  nextstate (ptr)	=  000ABB3
+ 					  next state		=     3
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    PROGRAM		 = . M1 M2 
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABB2
+ 					Dump of transition @  000ABB2
+ 					  next (transition)	=  000ABB5
+ 					  nextstate (ptr)	=  000ABCA
+ 					  next state		=     4
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    PROGRAM		 = M1 . M2 
+      Set   marke @  000ABB2
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABB5
+ 					Dump of transition @  000ABB5
+ 					  next (transition)	=  000ABB7
+ 					  nextstate (ptr)	=  000ABCF
+ 					  next state		=     5
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    M2		 = . MODULE_LIST eof 
+      Set   marke @  000ABB5
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABB7
+ 					Dump of transition @  000ABB7
+ 					  next (transition)	=  000ABB8
+ 					  nextstate (ptr)	=  000EA51
+ 					  next state		=   465
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    M2		 = . errormark eof 
+ 		look errormark                      
+      Set   marke @  000ABB7
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABB8
+ 					Dump of transition @  000ABB8
+ 					  next (transition)	=  000ABBA
+ 					  nextstate (ptr)	=  000EA64
+ 					  next state		=   467
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    MODULE_LIST	 = . MODULE_DECLARATION 
+      Set   marke @  000ABB8
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABBA
+ 					Dump of transition @  000ABBA
+ 					  next (transition)	=  000ABBB
+ 					  nextstate (ptr)	=  0000000
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    MODULE_LIST	 = . MODULE_LIST MODULE_DECLARATION 
+      Set   marke @  000ABBA
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABBB
+ 					Dump of transition @  000ABBB
+ 					  next (transition)	=  000ABBD
+ 					  nextstate (ptr)	=  000ABEC
+ 					  next state		=     8
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    MODULE_DECLARATION = . MODULE_STATEMENT MODULE_BODY END_MODULE_STATEMENT 
+      Set   marke @  000ABBB
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABBD
+ 					Dump of transition @  000ABBD
+ 					  next (transition)	=  000ABBE
+ 					  nextstate (ptr)	=  000E9E0
+ 					  next state		=   453
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    MODULE_DECLARATION = . LOCAL_ASSIGNMENT 
+      Set   marke @  000ABBD
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABBE
+ 					Dump of transition @  000ABBE
+ 					  next (transition)	=  000ABC0
+ 					  nextstate (ptr)	=  000E9E5
+ 					  next state		=   454
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    MODULE_DECLARATION = . comment 
+ 		look comment                        
+      Set   marke @  000ABBE
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABC0
+ 					Dump of transition @  000ABC0
+ 					  next (transition)	=  000ABC1
+ 					  nextstate (ptr)	=  000E9EA
+ 					  next state		=   455
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    MODULE_STATEMENT = . M_NAME M_OPTIONS ';' 
+      Set   marke @  000ABC0
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABC1
+ 					Dump of transition @  000ABC1
+ 					  next (transition)	=  000ABC3
+ 					  nextstate (ptr)	=  000ACDF
+ 					  next state		=    38
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    LOCAL_ASSIGNMENT = . LOCAL_SYMBOL '=' EXPRESSION ';' 
+      Set   marke @  000ABC1
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABC3
+ 					Dump of transition @  000ABC3
+ 					  next (transition)	=  000ABC4
+ 					  nextstate (ptr)	=  000EA19
+ 					  next state		=   460
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    M_NAME		 = . module NAMESTRING 
+ 		look module                         
+      Set   marke @  000ABC3
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABC4
+ 					Dump of transition @  000ABC4
+ 					  next (transition)	=  000ABC6
+ 					  nextstate (ptr)	=  0000000
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    M_NAME		 = . errormark module NAMESTRING 
+ 		look errormark                      
+      Set   marke @  000ABC4
+  forward from	   0 to    3
+ Follow
+  a (state number)		=    3
+  b (reduction transition)	=  000ABC6
+ 					Dump of transition @  000ABC6
+ 					  next (transition)	=  0000000
+ 					  nextstate (ptr)	=  000D44B
+ 					  next state		=   341
+ 					  marke			=  false
+ 					  markc			=  false
+ 					    Symbolic form of transition follows:
+ 					    LOCAL_SYMBOL	 = . local_name 
+ 		look local_name                     
+      Set   marke @  000ABC6
+ 
+
+                parsing tables
+                --------------
+
+
+
+ index	match symbol		action
+ _______________________________________________________________________________________________________
+     0	PROGRAM			Push; goto 3
+     1	M1			Push; goto 5
+     2	all others		Look ahead reduce last 0 to M1 by rule 3, perform action INITIALIZE
+     3	goalsy			Reduce 2 to ADDLE by rule 1
+     4	all others		Error
+     5	M2			Reduce 2 to PROGRAM by rule 2
+     6	MODULE_LIST		Push; goto 17
+     7	errormark		Push; goto 1002
+     8	MODULE_DECLARATION	Reduce to MODULE_LIST by rule 6
+     9	MODULE_STATEMENT	Push; goto 27
+    10	LOCAL_ASSIGNMENT	Reduce to MODULE_DECLARATION by rule 9
+    11	comment			Reduce to MODULE_DECLARATION by rule 10, perform action COMMENTNOD
+    12	M_NAME			Push; goto 989
+    13	LOCAL_SYMBOL		Push; goto 86
+    14	module			Push; goto 996
+    15	local_name		Reduce to LOCAL_SYMBOL by rule 43, perform action SAVELOCALNAME
+    16	all others		Error
+    17	eof			Reduce 2 to M2 by rule 4
+    18	MODULE_DECLARATION	Reduce 2 to MODULE_LIST by rule 7
+    19	MODULE_STATEMENT	Push; goto 27
+    20	LOCAL_ASSIGNMENT	Reduce to MODULE_DECLARATION by rule 9
+    21	comment			Reduce to MODULE_DECLARATION by rule 10, perform action COMMENTNOD
+    22	M_NAME			Push; goto 989
+    23	LOCAL_SYMBOL		Push; goto 86
+    24	module			Push; goto 996
+    25	errormark		Push; goto 998
+    26	continue at 15
+    27	MODULE_BODY		Push; goto 29
+    28	all others		Look ahead reduce last 0 to MODULE_BODY by rule 17
+    29	END_MODULE_STATEMENT	Reduce 3 to MODULE_DECLARATION by rule 8
+    30	STATEMENT		Reduce 2 to MODULE_BODY by rule 16
+    31	end_module		Push; goto 68
+    32	errormark		Push; goto 75
+    33	LOCAL_ASSIGNMENT	Reduce to STATEMENT by rule 22
+    34	CONSTANT_STATEMENT	Reduce to STATEMENT by rule 23
+    35	ENTRY_STATEMENT		Reduce to STATEMENT by rule 24
+    36	AGGREGATE_STATEMENT	Reduce to STATEMENT by rule 25
+    37	ITEM_STATEMENT		Reduce to STATEMENT by rule 26
+    38	DECLARE_STATEMENT	Reduce to STATEMENT by rule 27
+    39	IFSYMBOL_STATEMENT	Reduce to STATEMENT by rule 28
+    40	CONDITIONAL_STATEMENT	Reduce to STATEMENT by rule 29
+    41	LITERAL_STATEMENT	Reduce to STATEMENT by rule 30
+    42	READ_STATEMENT		Push; goto 82
+    43	comment			Reduce to STATEMENT by rule 32, perform action COMMENTNOD
+    44	INCLUDE_CLAUSE		Push; goto 84
+    45	';'			Reduce to STATEMENT by rule 35
+    46	LOCAL_SYMBOL		Push; goto 86
+    47	CONSTANT_KEY		Push; goto 155
+    48	ENTRY_CLAUSE		Push; goto 255
+    49	AGGREGATE_DCL		Push; goto 516
+    50	ITEM_CLAUSE		Push; goto 721
+    51	DECL_CLAUSE		Push; goto 740
+    52	IFSYMBOL_START		Push; goto 754
+    53	COND1			Push; goto 847
+    54	LITERAL_KEYWORD		Push; goto 876
+    55	read			Push; goto 881
+    56	include			Push; goto 883
+    57	local_name		Reduce to LOCAL_SYMBOL by rule 43, perform action SAVELOCALNAME
+    58	constant		Reduce to CONSTANT_KEY by rule 45, perform action STARTCONST
+    59	entry			Push; goto 896
+    60	AGGREGATE_CLAUSE	Push; goto 898
+    61	item			Push; goto 935
+    62	declare			Push; goto 937
+    63	ifsymbol		Push; goto 662
+    64	iflanguage		Reduce to COND1 by rule 264, perform action STARTCOND
+    65	literal			Push; goto 939
+    66	aggregate		Push; goto 941
+    67	all others		Error
+    68	NAME_OPTION		Push; goto 73
+    69	NAMESTRING		Reduce to NAME_OPTION by rule 20, perform action CHECKNAME
+    70	name			Reduce to NAMESTRING by rule 79, perform action CHECKNULL
+    71	string_literal		Reduce to NAMESTRING by rule 80
+    72	all others		Look ahead reduce last 0 to NAME_OPTION by rule 21
+    73	';'			Reduce 3 to END_MODULE_STATEMENT by rule 18, perform action ENDMOD
+    74	all others		Error
+    75	end_module		Push; goto 78
+    76	';'			Reduce 2 to STATEMENT by rule 34, perform action SYNERROR
+    77	all others		Error
+    78	NAME_OPTION		Push; goto 80
+    79	continue at 69
+    80	';'			Reduce 4 to END_MODULE_STATEMENT by rule 19, perform action SYNERROR
+    81	all others		Error
+    82	';'			Reduce 2 to STATEMENT by rule 31
+    83	all others		Error
+    84	';'			Reduce 2 to STATEMENT by rule 33
+    85	all others		Error
+    86	'='			Push; goto 88
+    87	all others		Error
+    88	EXPRESSION		Push; goto 107
+    89	EXPRESSION_1		Push; goto 136
+    90	EXPRESSION_2		Push; goto 138
+    91	EXPRESSION_3		Push; goto 140
+    92	EXPRESSION_4		Push; goto 152
+    93	EXPRESSION_5		Reduce to EXPRESSION_4 by rule 286
+    94	'+'			Push; goto 130
+    95	'-'			Push; goto 150
+    96	EXPRESSION_6		Reduce to EXPRESSION_5 by rule 289
+    97	numeric			Reduce to EXPRESSION_6 by rule 290, perform action PUSHTERM
+    98	local_name		Reduce to EXPRESSION_6 by rule 291, perform action PUSHLOCAL
+    99	NAMESTRING		Reduce to EXPRESSION_6 by rule 292, perform action PUSHCONST
+   100	'.'			Reduce to EXPRESSION_6 by rule 293, perform action PUSHDOT
+   101	'^'			Reduce to EXPRESSION_6 by rule 294, perform action PUSHCIRC
+   102	':'			Reduce to EXPRESSION_6 by rule 295, perform action PUSHCOLON
+   103	'('			Push; goto 132
+   104	name			Reduce to NAMESTRING by rule 79, perform action CHECKNULL
+   105	string_literal		Reduce to NAMESTRING by rule 80
+   106	all others		Error
+   107	';'			Reduce 4 to LOCAL_ASSIGNMENT by rule 42, perform action LOCALASN
+   108	'&'			Push; goto 110
+   109	all others		Error
+   110	EXPRESSION_1		Push; goto 112
+   111	continue at 90
+   112	'!'			Push; goto 114
+   113	all others		Look ahead reduce last 3 to EXPRESSION by rule 275, perform action ANDTERMS
+   114	EXPRESSION_2		Push; goto 116
+   115	continue at 91
+   116	'@'			Push; goto 118
+   117	all others		Look ahead reduce last 3 to EXPRESSION_1 by rule 277, perform action ORTERMS
+   118	EXPRESSION_3		Push; goto 120
+   119	continue at 92
+   120	'+'			Push; goto 123
+   121	'-'			Push; goto 143
+   122	all others		Look ahead reduce last 3 to EXPRESSION_2 by rule 279, perform action SHIFTERMS
+   123	EXPRESSION_4		Push; goto 125
+   124	continue at 93
+   125	'*'			Push; goto 128
+   126	'/'			Push; goto 148
+   127	all others		Look ahead reduce last 3 to EXPRESSION_3 by rule 281, perform action ADDTERMS
+   128	EXPRESSION_5		Reduce 3 to EXPRESSION_4 by rule 284, perform action MULTERMS
+   129	continue at 94
+   130	EXPRESSION_6		Reduce 2 to EXPRESSION_5 by rule 287, perform action PLUSTERM
+   131	continue at 97
+   132	EXPRESSION		Push; goto 134
+   133	continue at 89
+   134	')'			Reduce 3 to EXPRESSION_6 by rule 296
+   135	continue at 108
+   136	'!'			Push; goto 114
+   137	all others		Look ahead reduce last to EXPRESSION by rule 276
+   138	'@'			Push; goto 118
+   139	all others		Look ahead reduce last to EXPRESSION_1 by rule 278
+   140	'+'			Push; goto 123
+   141	'-'			Push; goto 143
+   142	all others		Look ahead reduce last to EXPRESSION_2 by rule 280
+   143	EXPRESSION_4		Push; goto 145
+   144	continue at 93
+   145	'*'			Push; goto 128
+   146	'/'			Push; goto 148
+   147	all others		Look ahead reduce last 3 to EXPRESSION_3 by rule 282, perform action SUBTERMS
+   148	EXPRESSION_5		Reduce 3 to EXPRESSION_4 by rule 285, perform action DIVTERMS
+   149	continue at 94
+   150	EXPRESSION_6		Reduce 2 to EXPRESSION_5 by rule 288, perform action MINUSTERM
+   151	continue at 97
+   152	'*'			Push; goto 128
+   153	'/'			Push; goto 148
+   154	all others		Look ahead reduce last to EXPRESSION_3 by rule 283
+   155	CONSTANT_BODY		Push; goto 163
+   156	CONSTANT_PHRASE		Reduce to CONSTANT_BODY by rule 46
+   157	NAME_OR_LIST		Push; goto 171
+   158	C_NAME_1		Reduce to NAME_OR_LIST by rule 53
+   159	'('			Push; goto 214
+   160	C_NAME			Push; goto 244
+   161	NAMESTRING		Reduce to C_NAME by rule 60, perform action MAKNAMLIS
+   162	continue at 104
+   163	';'			Reduce 3 to CONSTANT_STATEMENT by rule 44, perform action ENDCONST
+   164	','			Push; goto 166
+   165	all others		Error
+   166	COMMENT_LIST		Push; goto 168
+   167	all others		Look ahead reduce last 0 to COMMENT_LIST by rule 52
+   168	CONSTANT_PHRASE		Reduce 4 to CONSTANT_BODY by rule 47
+   169	comment			Reduce 2 to COMMENT_LIST by rule 51, perform action COMMENTNOD
+   170	continue at 157
+   171	equals			Push; goto 173
+   172	all others		Error
+   173	VALUE_OR_STRING		Reduce 3 to CONSTANT_PHRASE by rule 48, perform action MAKCSTNOD
+   174	CONSTANT_VALUE		Push; goto 178
+   175	string			Push; goto 200
+   176	EXPRESSION		Push; goto 212
+   177	continue at 89
+   178	CONSTANT_OPTIONS	Push; goto 180
+   179	all others		Look ahead reduce last 0 to CONSTANT_OPTIONS by rule 74
+   180	increment		Push; goto 186
+   181	prefix			Push; goto 190
+   182	tag			Push; goto 192
+   183	counter			Push; goto 194
+   184	typename		Push; goto 196
+   185	all others		Look ahead reduce last 2 to VALUE_OR_STRING by rule 49
+   186	EXPRESSION		Push; goto 188
+   187	continue at 89
+   188	'&'			Push; goto 110
+   189	all others		Look ahead reduce last 3 to CONSTANT_OPTIONS by rule 69, perform action SETINCR
+   190	NAMESTRING		Reduce 3 to CONSTANT_OPTIONS by rule 70, perform action SAVEPREFIX
+   191	continue at 104
+   192	NAMESTRING		Reduce 3 to CONSTANT_OPTIONS by rule 71, perform action SAVETAG
+   193	continue at 104
+   194	local_name		Reduce 3 to CONSTANT_OPTIONS by rule 72, perform action SAVECOUNTER
+   195	all others		Error
+   196	TYPESTRING		Reduce 3 to CONSTANT_OPTIONS by rule 73, perform action SAVETYPENAM
+   197	name			Reduce to TYPESTRING by rule 117, perform action CHECKNULL
+   198	string_literal		Reduce to TYPESTRING by rule 118
+   199	all others		Error
+   200	STRING_VALUE		Push; goto 203
+   201	string_literal		Reduce to STRING_VALUE by rule 75, perform action SETCONSTR
+   202	all others		Error
+   203	STRING_OPTIONS		Push; goto 205
+   204	all others		Look ahead reduce last 0 to STRING_OPTIONS by rule 78
+   205	prefix			Push; goto 208
+   206	tag			Push; goto 210
+   207	all others		Look ahead reduce last 3 to VALUE_OR_STRING by rule 50
+   208	NAMESTRING		Reduce 3 to STRING_OPTIONS by rule 76, perform action SAVEPREFIX
+   209	continue at 104
+   210	NAMESTRING		Reduce 3 to STRING_OPTIONS by rule 77, perform action SAVETAG
+   211	continue at 104
+   212	'&'			Push; goto 110
+   213	all others		Look ahead reduce last to CONSTANT_VALUE by rule 68, perform action SETCONVAL
+   214	COMMENT_LIST		Push; goto 216
+   215	all others		Look ahead reduce last 0 to COMMENT_LIST by rule 52
+   216	NAME_LIST		Push; goto 225
+   217	comment			Reduce 2 to COMMENT_LIST by rule 51, perform action COMMENTNOD
+   218	C_NAME_1		Reduce to NAME_LIST by rule 56
+   219	C_COMMA1		Push; goto 252
+   220	C_NAME			Push; goto 244
+   221	C_COMMA			Reduce to C_COMMA1 by rule 61, perform action NULLNAME
+   222	NAMESTRING		Reduce to C_NAME by rule 60, perform action MAKNAMLIS
+   223	','			Push; goto 248
+   224	continue at 104
+   225	')'			Push; goto 230
+   226	C_COMMA2		Push; goto 234
+   227	C_COMMA			Reduce to C_COMMA2 by rule 63
+   228	','			Push; goto 248
+   229	all others		Error
+   230	C_COMMENT_LIST		Push; goto 232
+   231	all others		Look ahead reduce last 0 to C_COMMENT_LIST by rule 67
+   232	comment			Reduce 2 to C_COMMENT_LIST by rule 66, perform action SETNAMCOM
+   233	all others		Look ahead reduce last 5 to NAME_OR_LIST by rule 54
+   234	')'			Push; goto 240
+   235	C_NAME_1		Reduce 3 to NAME_LIST by rule 58
+   236	C_COMMA			Reduce 2 to C_COMMA2 by rule 64, perform action NULLNAME
+   237	C_NAME			Push; goto 244
+   238	','			Push; goto 248
+   239	continue at 161
+   240	C_COMMENT_LIST		Push; goto 242
+   241	all others		Look ahead reduce last 0 to C_COMMENT_LIST by rule 67
+   242	comment			Reduce 2 to C_COMMENT_LIST by rule 66, perform action SETNAMCOM
+   243	all others		Look ahead reduce last 6 to NAME_OR_LIST by rule 55
+   244	C_COMMENT_LIST		Push; goto 246
+   245	all others		Look ahead reduce last 0 to C_COMMENT_LIST by rule 67
+   246	comment			Reduce 2 to C_COMMENT_LIST by rule 66, perform action SETNAMCOM
+   247	all others		Look ahead reduce last 2 to C_NAME_1 by rule 59
+   248	C_COMMENT_LIST		Push; goto 250
+   249	all others		Look ahead reduce last 0 to C_COMMENT_LIST by rule 67
+   250	comment			Reduce 2 to C_COMMENT_LIST by rule 66, perform action SETNAMCOM
+   251	all others		Look ahead reduce last 2 to C_COMMA by rule 65
+   252	C_NAME_1		Reduce 2 to NAME_LIST by rule 57
+   253	C_COMMA			Reduce 2 to C_COMMA1 by rule 62, perform action NULLNAME
+   254	continue at 237
+   255	ENTRY_OPTION		Push; goto 257
+   256	all others		Look ahead reduce last 0 to ENTRY_OPTION by rule 90
+   257	';'			Reduce 3 to ENTRY_STATEMENT by rule 81, perform action SETLINENO_CHECKLIST
+   258	PARAMETER_KEYWORD	Push; goto 267
+   259	RETURN_KEYWORD		Push; goto 491
+   260	variable		Reduce 2 to ENTRY_OPTION by rule 86, perform action SETVAROPT
+   261	typename		Push; goto 502
+   262	alias			Push; goto 504
+   263	linkage			Push; goto 506
+   264	parameter		Reduce to PARAMETER_KEYWORD by rule 91, perform action SETPARM
+   265	returns			Reduce to RETURN_KEYWORD by rule 92, perform action SETRETURN
+   266	all others		Error
+   267	'('			Push; goto 269
+   268	all others		Error
+   269	PARAM_LIST		Push; goto 272
+   270	COMMENT_LIST		Push; goto 508
+   271	all others		Look ahead reduce last 0 to COMMENT_LIST by rule 52
+   272	')'			Reduce 5 to ENTRY_OPTION by rule 83, perform action POPPARENT
+   273	','			Push; goto 275
+   274	all others		Error
+   275	COMMENT_LIST		Push; goto 277
+   276	all others		Look ahead reduce last 0 to COMMENT_LIST by rule 52
+   277	P1			Push; goto 280
+   278	comment			Reduce 2 to COMMENT_LIST by rule 51, perform action COMMENTNOD
+   279	all others		Look ahead reduce last 0 to P1 by rule 99, perform action MAKPARNOD
+   280	PARAM			Push; goto 313
+   281	DATA_OR_USER_TYPE	Reduce to PARAM by rule 101
+   282	any			Reduce to PARAM by rule 102, perform action SETANY
+   283	DATA_TYPE		Reduce to DATA_OR_USER_TYPE by rule 245
+   284	USER_TYPENAME		Push; goto 352
+   285	byte			Push; goto 365
+   286	word			Push; goto 369
+   287	longword		Push; goto 371
+   288	quadword		Push; goto 373
+   289	octaword		Push; goto 375
+   290	f_floating		Push; goto 377
+   291	d_floating		Push; goto 380
+   292	g_floating		Push; goto 382
+   293	h_floating		Push; goto 384
+   294	decimal			Push; goto 386
+   295	bitfield		Push; goto 404
+   296	character		Push; goto 415
+   297	boolean			Reduce to DATA_TYPE by rule 135, perform action SETBOOL
+   298	address			Push; goto 426
+   299	pointer			Push; goto 451
+   300	pointer_long		Push; goto 453
+   301	pointer_quad		Push; goto 455
+   302	pointer_hw		Push; goto 457
+   303	integer_byte		Push; goto 459
+   304	integer_word		Push; goto 461
+   305	integer_long		Push; goto 463
+   306	integer_quad		Push; goto 465
+   307	integer_hw		Push; goto 467
+   308	integer			Push; goto 469
+   309	hardware_address	Push; goto 471
+   310	hardware_integer	Push; goto 473
+   311	NAMESTRING		Reduce to USER_TYPENAME by rule 247, perform action SAVEUSERNAME
+   312	continue at 104
+   313	P_OPT			Push; goto 315
+   314	all others		Look ahead reduce last 0 to P_OPT by rule 116
+   315	P2			Reduce 7 to PARAM_LIST by rule 98
+   316	value			Reduce 2 to P_OPT by rule 103, perform action SETVALOPT
+   317	descriptor		Reduce 2 to P_OPT by rule 104, perform action SETDESCRIP
+   318	rtl_str_desc		Reduce 2 to P_OPT by rule 105, perform action SETRTLSTRDESC
+   319	dimension		Push; goto 330
+   320	in			Reduce 2 to P_OPT by rule 107, perform action SETIN
+   321	out			Reduce 2 to P_OPT by rule 108, perform action SETOUT
+   322	list			Reduce 2 to P_OPT by rule 109, perform action SETLIST
+   323	named			Push; goto 344
+   324	default			Push; goto 346
+   325	optional		Reduce 2 to P_OPT by rule 112, perform action SETOPTIONAL
+   326	reference		Reduce 2 to P_OPT by rule 113, perform action SETREF
+   327	comment			Reduce 2 to P_OPT by rule 114, perform action COMMENTNOD
+   328	typename		Push; goto 350
+   329	all others		Look ahead reduce last 0 to P2 by rule 100, perform action SETDEFPRMATT
+   330	DIMEN_EXPR		Reduce 3 to P_OPT by rule 106
+   331	EXPRESSION		Push; goto 335
+   332	LODIMEN			Push; goto 338
+   333	'*'			Reduce to DIMEN_EXPR by rule 121, perform action SETVARDIM
+   334	continue at 89
+   335	'&'			Push; goto 110
+   336	':'			Look ahead reduce last to LODIMEN by rule 122, perform action SETLODIM
+   337	all others		Look ahead reduce last to DIMEN_EXPR by rule 119, perform action SETDIMEN
+   338	':'			Push; goto 340
+   339	all others		Error
+   340	EXPRESSION		Push; goto 342
+   341	continue at 89
+   342	'&'			Push; goto 110
+   343	all others		Look ahead reduce last 3 to DIMEN_EXPR by rule 120, perform action SETHIDIM
+   344	NAMESTRING		Reduce 3 to P_OPT by rule 110, perform action SETPNAME
+   345	continue at 104
+   346	EXPRESSION		Push; goto 348
+   347	continue at 89
+   348	'&'			Push; goto 110
+   349	all others		Look ahead reduce last 3 to P_OPT by rule 111, perform action SETDEFAULT
+   350	TYPESTRING		Reduce 3 to P_OPT by rule 115, perform action SETTYPNAME
+   351	continue at 197
+   352	SIZEOF_CLAUSE_OPT	Reduce 2 to DATA_OR_USER_TYPE by rule 246, perform action SETUSER
+   353	SIZEOF_CLAUSE		Reduce to SIZEOF_CLAUSE_OPT by rule 248
+   354	SIZEOF_KEYWORD		Push; goto 357
+   355	sizeof			Reduce to SIZEOF_KEYWORD by rule 251, perform action SETSIZEOF
+   356	all others		Look ahead reduce last 0 to SIZEOF_CLAUSE_OPT by rule 249
+   357	SIZEOF_OPTION		Reduce 2 to SIZEOF_CLAUSE by rule 250, perform action ENDSIZEOF
+   358	DATA_OR_USER_TYPE	Reduce to SIZEOF_OPTION by rule 252
+   359	'('			Push; goto 361
+   360	continue at 283
+   361	EXPRESSION		Push; goto 363
+   362	continue at 89
+   363	')'			Reduce 3 to SIZEOF_OPTION by rule 253, perform action SETSIZEXPR
+   364	continue at 108
+   365	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 123, perform action SETBYTE
+   366	signed			Reduce to SIGN_OPTION by rule 157, perform action SETSIGNED
+   367	unsigned		Reduce to SIGN_OPTION by rule 158, perform action SETUNSIGN
+   368	all others		Look ahead reduce last 0 to SIGN_OPTION by rule 159
+   369	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 124, perform action SETWORD
+   370	continue at 366
+   371	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 125, perform action SETLONG
+   372	continue at 366
+   373	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 126, perform action SETQUAD
+   374	continue at 366
+   375	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 127, perform action SETOCTA
+   376	continue at 366
+   377	COMPLEX_OPTION		Reduce 2 to DATA_TYPE by rule 128, perform action SETFLOAT
+   378	complex			Reduce to COMPLEX_OPTION by rule 160, perform action SETCOMPLEX
+   379	all others		Look ahead reduce last 0 to COMPLEX_OPTION by rule 161
+   380	COMPLEX_OPTION		Reduce 2 to DATA_TYPE by rule 129, perform action SETDOUBLE
+   381	continue at 378
+   382	COMPLEX_OPTION		Reduce 2 to DATA_TYPE by rule 130, perform action SETGRAND
+   383	continue at 378
+   384	COMPLEX_OPTION		Reduce 2 to DATA_TYPE by rule 131, perform action SETHUGE
+   385	continue at 378
+   386	precision		Push; goto 388
+   387	all others		Error
+   388	'('			Push; goto 390
+   389	all others		Error
+   390	PREC			Push; goto 393
+   391	EXPRESSION		Push; goto 402
+   392	continue at 89
+   393	','			Push; goto 395
+   394	all others		Error
+   395	SCALE			Push; goto 398
+   396	EXPRESSION		Push; goto 400
+   397	continue at 89
+   398	')'			Reduce 7 to DATA_TYPE by rule 132, perform action SETDEC
+   399	all others		Error
+   400	'&'			Push; goto 110
+   401	all others		Look ahead reduce last to SCALE by rule 163, perform action SETSCALE
+   402	'&'			Push; goto 110
+   403	all others		Look ahead reduce last to PREC by rule 162, perform action SETPREC
+   404	VIELD_OPTIONS		Push; goto 406
+   405	all others		Look ahead reduce last 0 to VIELD_OPTIONS by rule 168
+   406	mask			Reduce 2 to VIELD_OPTIONS by rule 164, perform action SETMASK
+   407	length			Push; goto 411
+   408	signed			Reduce 2 to VIELD_OPTIONS by rule 166, perform action SETSIGNED
+   409	unsigned		Reduce 2 to VIELD_OPTIONS by rule 167, perform action SETUNSIGN
+   410	all others		Look ahead reduce last 2 to DATA_TYPE by rule 133, perform action SETVIELD
+   411	EXPRESSION		Push; goto 413
+   412	continue at 89
+   413	'&'			Push; goto 110
+   414	all others		Look ahead reduce last 3 to VIELD_OPTIONS by rule 165, perform action SETLENGTH
+   415	CHAR_OPTIONS		Push; goto 417
+   416	all others		Look ahead reduce last 0 to CHAR_OPTIONS by rule 171
+   417	varying			Reduce 2 to CHAR_OPTIONS by rule 169, perform action SETCHRVAR
+   418	length			Push; goto 420
+   419	all others		Look ahead reduce last 2 to DATA_TYPE by rule 134, perform action SETCHAR
+   420	LENGTH_EXPR		Reduce 3 to CHAR_OPTIONS by rule 170
+   421	'*'			Reduce to LENGTH_EXPR by rule 172, perform action SETUNKLENGTH
+   422	EXPRESSION		Push; goto 424
+   423	continue at 89
+   424	'&'			Push; goto 110
+   425	all others		Look ahead reduce last to LENGTH_EXPR by rule 173, perform action SETLENGTH
+   426	OBJECT_OPTION		Reduce 2 to DATA_TYPE by rule 136, perform action SETADDR
+   427	OBJ_PAREN		Push; goto 430
+   428	'('			Reduce to OBJ_PAREN by rule 151, perform action MAKOBJNOD
+   429	all others		Look ahead reduce last 0 to OBJECT_OPTION by rule 150
+   430	OBJECT_TYPE		Push; goto 437
+   431	DATA_OR_USER_TYPE	Push; goto 475
+   432	ENTRY_OBJECT		Push; goto 480
+   433	DATA_TYPE		Reduce to DATA_OR_USER_TYPE by rule 245
+   434	USER_TYPENAME		Push; goto 352
+   435	entry			Reduce to ENTRY_OBJECT by rule 154, perform action SETENTRY
+   436	continue at 285
+   437	BASE_OPTION		Push; goto 442
+   438	BASEALIGN_OPTION	Reduce to BASE_OPTION by rule 155
+   439	BASEALIGN_KEY		Push; goto 444
+   440	basealign		Reduce to BASEALIGN_KEY by rule 256, perform action SETBASEALIGN
+   441	all others		Look ahead reduce last 0 to BASE_OPTION by rule 156
+   442	')'			Reduce 4 to OBJECT_OPTION by rule 149, perform action POPPARENT
+   443	all others		Error
+   444	DATA_OR_USER_TYPE	Reduce 2 to BASEALIGN_OPTION by rule 254, perform action SETBASETYPE
+   445	'('			Push; goto 447
+   446	continue at 283
+   447	EXPRESSION		Push; goto 449
+   448	continue at 89
+   449	')'			Reduce 4 to BASEALIGN_OPTION by rule 255, perform action SETBASEEXPR
+   450	continue at 108
+   451	OBJECT_OPTION		Reduce 2 to DATA_TYPE by rule 137, perform action SETPS
+   452	continue at 427
+   453	OBJECT_OPTION		Reduce 2 to DATA_TYPE by rule 138, perform action SETPL
+   454	continue at 427
+   455	OBJECT_OPTION		Reduce 2 to DATA_TYPE by rule 139, perform action SETPQ
+   456	continue at 427
+   457	OBJECT_OPTION		Reduce 2 to DATA_TYPE by rule 140, perform action SETPH
+   458	continue at 427
+   459	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 141, perform action SETIB
+   460	continue at 366
+   461	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 142, perform action SETIW
+   462	continue at 366
+   463	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 143, perform action SETIL
+   464	continue at 366
+   465	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 144, perform action SETIQ
+   466	continue at 366
+   467	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 145, perform action SETIH
+   468	continue at 366
+   469	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 146, perform action SETINT
+   470	continue at 366
+   471	OBJECT_OPTION		Reduce 2 to DATA_TYPE by rule 147, perform action SETHWADR
+   472	continue at 427
+   473	SIGN_OPTION		Reduce 2 to DATA_TYPE by rule 148, perform action SETHWINT
+   474	continue at 366
+   475	DIMENSION_OPTION	Reduce 2 to OBJECT_TYPE by rule 152
+   476	dimension		Push; goto 478
+   477	all others		Look ahead reduce last 0 to DIMENSION_OPTION by rule 175
+   478	DIMEN_EXPR		Reduce 2 to DIMENSION_OPTION by rule 174
+   479	continue at 331
+   480	ENTRY_OPTION		Push; goto 482
+   481	all others		Look ahead reduce last 0 to ENTRY_OPTION by rule 90
+   482	PARAMETER_KEYWORD	Push; goto 267
+   483	RETURN_KEYWORD		Push; goto 491
+   484	variable		Reduce 2 to ENTRY_OPTION by rule 86, perform action SETVAROPT
+   485	typename		Push; goto 502
+   486	alias			Push; goto 504
+   487	linkage			Push; goto 506
+   488	parameter		Reduce to PARAMETER_KEYWORD by rule 91, perform action SETPARM
+   489	returns			Reduce to RETURN_KEYWORD by rule 92, perform action SETRETURN
+   490	all others		Look ahead reduce last 2 to OBJECT_TYPE by rule 153, perform action POPPARENT
+   491	RET_DATA_TYPE		Push; goto 495
+   492	DATA_OR_USER_TYPE	Reduce to RET_DATA_TYPE by rule 93
+   493	void			Reduce to RET_DATA_TYPE by rule 94, perform action SETVOID
+   494	continue at 283
+   495	RETURN_NAME_OPTION	Push; goto 498
+   496	named			Push; goto 500
+   497	all others		Look ahead reduce last 0 to RETURN_NAME_OPTION by rule 96
+   498	comment			Reduce 5 to ENTRY_OPTION by rule 85, perform action COMMENTNOD
+   499	all others		Look ahead reduce last 4 to ENTRY_OPTION by rule 84
+   500	NAMESTRING		Reduce 2 to RETURN_NAME_OPTION by rule 95, perform action SETRETNAME
+   501	continue at 104
+   502	TYPESTRING		Reduce 3 to ENTRY_OPTION by rule 87, perform action SETTYPNAME
+   503	continue at 197
+   504	NAMESTRING		Reduce 3 to ENTRY_OPTION by rule 88, perform action SETALIAS
+   505	continue at 104
+   506	NAMESTRING		Reduce 3 to ENTRY_OPTION by rule 89, perform action SETLINK
+   507	continue at 104
+   508	P1			Push; goto 510
+   509	continue at 278
+   510	PARAM			Push; goto 512
+   511	continue at 281
+   512	P_OPT			Push; goto 514
+   513	all others		Look ahead reduce last 0 to P_OPT by rule 116
+   514	P2			Reduce 5 to PARAM_LIST by rule 97
+   515	continue at 316
+   516	AGGREGATE_BODY		Push; goto 518
+   517	all others		Look ahead reduce last 0 to AGGREGATE_BODY by rule 204
+   518	AGGREGATE_END		Reduce 3 to AGGREGATE_STATEMENT by rule 176
+   519	AGGREGATE_MEMBER	Reduce 2 to AGGREGATE_BODY by rule 198
+   520	LOCAL_ASSIGNMENT	Reduce 2 to AGGREGATE_BODY by rule 199
+   521	CONSTANT_STATEMENT	Reduce 2 to AGGREGATE_BODY by rule 200
+   522	comment			Reduce 2 to AGGREGATE_BODY by rule 201, perform action COMMENTNOD
+   523	IFSYMBOL_CLAUSE		Reduce 2 to AGGREGATE_BODY by rule 202
+   524	';'			Reduce 2 to AGGREGATE_BODY by rule 203
+   525	'end'			Push; goto 536
+   526	errormark		Push; goto 540
+   527	MEMBER_NAME		Push; goto 547
+   528	LOCAL_SYMBOL		Push; goto 86
+   529	CONSTANT_KEY		Push; goto 155
+   530	IFSYMBOL_START		Push; goto 606
+   531	NAMESTRING		Reduce to MEMBER_NAME by rule 207, perform action MAKITMNOD
+   532	local_name		Reduce to LOCAL_SYMBOL by rule 43, perform action SAVELOCALNAME
+   533	constant		Reduce to CONSTANT_KEY by rule 45, perform action STARTCONST
+   534	ifsymbol		Push; goto 662
+   535	continue at 104
+   536	NAME_OPTION		Push; goto 538
+   537	continue at 69
+   538	';'			Reduce 3 to AGGREGATE_END by rule 219, perform action AGGEND
+   539	all others		Error
+   540	'end'			Push; goto 543
+   541	';'			Reduce 2 to AGGREGATE_MEMBER by rule 206, perform action SYNERROR
+   542	all others		Error
+   543	NAME_OPTION		Push; goto 545
+   544	continue at 69
+   545	';'			Reduce 4 to AGGREGATE_END by rule 220, perform action SYNERROR
+   546	all others		Error
+   547	REST_OF_MEMBER		Reduce 2 to AGGREGATE_MEMBER by rule 205
+   548	DATA_OR_USER_TYPE	Push; goto 583
+   549	SUB_AGG_DCL		Push; goto 602
+   550	DATA_TYPE		Reduce to DATA_OR_USER_TYPE by rule 245
+   551	USER_TYPENAME		Push; goto 352
+   552	AGGREGATE_TYPE		Push; goto 688
+   553	byte			Push; goto 365
+   554	word			Push; goto 369
+   555	longword		Push; goto 371
+   556	quadword		Push; goto 373
+   557	octaword		Push; goto 375
+   558	f_floating		Push; goto 377
+   559	d_floating		Push; goto 380
+   560	g_floating		Push; goto 382
+   561	h_floating		Push; goto 384
+   562	decimal			Push; goto 386
+   563	bitfield		Push; goto 404
+   564	character		Push; goto 415
+   565	boolean			Reduce to DATA_TYPE by rule 135, perform action SETBOOL
+   566	address			Push; goto 426
+   567	pointer			Push; goto 451
+   568	pointer_long		Push; goto 453
+   569	pointer_quad		Push; goto 455
+   570	pointer_hw		Push; goto 457
+   571	integer_byte		Push; goto 459
+   572	integer_word		Push; goto 461
+   573	integer_long		Push; goto 463
+   574	integer_quad		Push; goto 465
+   575	integer_hw		Push; goto 467
+   576	integer			Push; goto 469
+   577	hardware_address	Push; goto 471
+   578	hardware_integer	Push; goto 473
+   579	NAMESTRING		Reduce to USER_TYPENAME by rule 247, perform action SAVEUSERNAME
+   580	structure		Reduce to AGGREGATE_TYPE by rule 179, perform action SETSTRUC
+   581	union			Reduce to AGGREGATE_TYPE by rule 180, perform action SETUNION
+   582	continue at 104
+   583	MEMBER_OPTIONS		Push; goto 585
+   584	all others		Look ahead reduce last 0 to MEMBER_OPTIONS by rule 217
+   585	';'			Reduce 3 to REST_OF_MEMBER by rule 208, perform action ENDMEMBER
+   586	prefix			Push; goto 596
+   587	tag			Push; goto 598
+   588	fill			Reduce 2 to MEMBER_OPTIONS by rule 212, perform action SETFILL
+   589	dimension		Push; goto 600
+   590	align			Reduce 2 to MEMBER_OPTIONS by rule 214, perform action SETALIGN
+   591	noalign			Reduce 2 to MEMBER_OPTIONS by rule 215, perform action SETNOALIGN
+   592	BASEALIGN_OPTION	Reduce 2 to MEMBER_OPTIONS by rule 216
+   593	BASEALIGN_KEY		Push; goto 444
+   594	basealign		Reduce to BASEALIGN_KEY by rule 256, perform action SETBASEALIGN
+   595	all others		Error
+   596	NAMESTRING		Reduce 3 to MEMBER_OPTIONS by rule 210, perform action SETPREFIX
+   597	continue at 104
+   598	NAMESTRING		Reduce 3 to MEMBER_OPTIONS by rule 211, perform action SETTAG
+   599	continue at 104
+   600	DIMEN_EXPR		Reduce 3 to MEMBER_OPTIONS by rule 213
+   601	continue at 331
+   602	AGGREGATE_BODY		Push; goto 604
+   603	all others		Look ahead reduce last 0 to AGGREGATE_BODY by rule 204
+   604	AGGREGATE_END		Reduce 3 to REST_OF_MEMBER by rule 209
+   605	continue at 519
+   606	';'			Push; goto 608
+   607	all others		Error
+   608	AGGREGATE_BODY		Push; goto 610
+   609	all others		Look ahead reduce last 0 to AGGREGATE_BODY by rule 204
+   610	ELSE_IFSYMBOL_CLAUSE	Push; goto 629
+   611	AGGREGATE_MEMBER	Reduce 2 to AGGREGATE_BODY by rule 198
+   612	LOCAL_ASSIGNMENT	Reduce 2 to AGGREGATE_BODY by rule 199
+   613	CONSTANT_STATEMENT	Reduce 2 to AGGREGATE_BODY by rule 200
+   614	comment			Reduce 2 to AGGREGATE_BODY by rule 201, perform action COMMENTNOD
+   615	IFSYMBOL_CLAUSE		Reduce 2 to AGGREGATE_BODY by rule 202
+   616	';'			Reduce 2 to AGGREGATE_BODY by rule 203
+   617	MEMBER_NAME		Push; goto 547
+   618	errormark		Push; goto 541
+   619	LOCAL_SYMBOL		Push; goto 86
+   620	CONSTANT_KEY		Push; goto 155
+   621	IFSYMBOL_START		Push; goto 606
+   622	NAMESTRING		Reduce to MEMBER_NAME by rule 207, perform action MAKITMNOD
+   623	local_name		Reduce to LOCAL_SYMBOL by rule 43, perform action SAVELOCALNAME
+   624	constant		Reduce to CONSTANT_KEY by rule 45, perform action STARTCONST
+   625	ifsymbol		Push; goto 662
+   626	name			Reduce to NAMESTRING by rule 79, perform action CHECKNULL
+   627	string_literal		Reduce to NAMESTRING by rule 80
+   628	all others		Look ahead reduce last 0 to ELSE_IFSYMBOL_CLAUSE by rule 223
+   629	ELSE_SYMBOL_CLAUSE	Push; goto 635
+   630	ELSE_IFSYMBOL_START	Push; goto 640
+   631	ELSE_SYMBOL		Push; goto 664
+   632	else_ifsymbol		Push; goto 686
+   633	else			Reduce to ELSE_SYMBOL by rule 233, perform action IFSYMBOL_ELSE
+   634	all others		Look ahead reduce last 0 to ELSE_SYMBOL_CLAUSE by rule 225
+   635	IFSYMBOL_END		Push; goto 638
+   636	end_ifsymbol		Reduce to IFSYMBOL_END by rule 234, perform action IFSYMBOL_END
+   637	all others		Error
+   638	';'			Reduce 7 to IFSYMBOL_CLAUSE by rule 221
+   639	all others		Error
+   640	';'			Push; goto 642
+   641	all others		Error
+   642	AGGREGATE_BODY		Push; goto 644
+   643	all others		Look ahead reduce last 0 to AGGREGATE_BODY by rule 204
+   644	AGGREGATE_MEMBER	Reduce 2 to AGGREGATE_BODY by rule 198
+   645	LOCAL_ASSIGNMENT	Reduce 2 to AGGREGATE_BODY by rule 199
+   646	CONSTANT_STATEMENT	Reduce 2 to AGGREGATE_BODY by rule 200
+   647	comment			Reduce 2 to AGGREGATE_BODY by rule 201, perform action COMMENTNOD
+   648	IFSYMBOL_CLAUSE		Reduce 2 to AGGREGATE_BODY by rule 202
+   649	';'			Reduce 2 to AGGREGATE_BODY by rule 203
+   650	MEMBER_NAME		Push; goto 547
+   651	errormark		Push; goto 541
+   652	LOCAL_SYMBOL		Push; goto 86
+   653	CONSTANT_KEY		Push; goto 155
+   654	IFSYMBOL_START		Push; goto 606
+   655	NAMESTRING		Reduce to MEMBER_NAME by rule 207, perform action MAKITMNOD
+   656	local_name		Reduce to LOCAL_SYMBOL by rule 43, perform action SAVELOCALNAME
+   657	constant		Reduce to CONSTANT_KEY by rule 45, perform action STARTCONST
+   658	ifsymbol		Push; goto 662
+   659	name			Reduce to NAMESTRING by rule 79, perform action CHECKNULL
+   660	string_literal		Reduce to NAMESTRING by rule 80
+   661	all others		Look ahead reduce last 4 to ELSE_IFSYMBOL_CLAUSE by rule 222
+   662	NAMESTRING		Reduce 2 to IFSYMBOL_START by rule 231, perform action IFSYMBOL_START
+   663	continue at 104
+   664	';'			Push; goto 666
+   665	all others		Error
+   666	AGGREGATE_BODY		Push; goto 668
+   667	all others		Look ahead reduce last 0 to AGGREGATE_BODY by rule 204
+   668	AGGREGATE_MEMBER	Reduce 2 to AGGREGATE_BODY by rule 198
+   669	LOCAL_ASSIGNMENT	Reduce 2 to AGGREGATE_BODY by rule 199
+   670	CONSTANT_STATEMENT	Reduce 2 to AGGREGATE_BODY by rule 200
+   671	comment			Reduce 2 to AGGREGATE_BODY by rule 201, perform action COMMENTNOD
+   672	IFSYMBOL_CLAUSE		Reduce 2 to AGGREGATE_BODY by rule 202
+   673	';'			Reduce 2 to AGGREGATE_BODY by rule 203
+   674	MEMBER_NAME		Push; goto 547
+   675	errormark		Push; goto 541
+   676	LOCAL_SYMBOL		Push; goto 86
+   677	CONSTANT_KEY		Push; goto 155
+   678	IFSYMBOL_START		Push; goto 606
+   679	NAMESTRING		Reduce to MEMBER_NAME by rule 207, perform action MAKITMNOD
+   680	local_name		Reduce to LOCAL_SYMBOL by rule 43, perform action SAVELOCALNAME
+   681	constant		Reduce to CONSTANT_KEY by rule 45, perform action STARTCONST
+   682	ifsymbol		Push; goto 662
+   683	name			Reduce to NAMESTRING by rule 79, perform action CHECKNULL
+   684	string_literal		Reduce to NAMESTRING by rule 80
+   685	all others		Look ahead reduce last 3 to ELSE_SYMBOL_CLAUSE by rule 224
+   686	NAMESTRING		Reduce 2 to ELSE_IFSYMBOL_START by rule 232, perform action IFSYMBOL_ELSEIF
+   687	continue at 104
+   688	IMPL_UNION_DATATYPE	Push; goto 717
+   689	DATA_TYPE		Reduce to IMPL_UNION_DATATYPE by rule 181
+   690	byte			Push; goto 365
+   691	word			Push; goto 369
+   692	longword		Push; goto 371
+   693	quadword		Push; goto 373
+   694	octaword		Push; goto 375
+   695	f_floating		Push; goto 377
+   696	d_floating		Push; goto 380
+   697	g_floating		Push; goto 382
+   698	h_floating		Push; goto 384
+   699	decimal			Push; goto 386
+   700	bitfield		Push; goto 404
+   701	character		Push; goto 415
+   702	boolean			Reduce to DATA_TYPE by rule 135, perform action SETBOOL
+   703	address			Push; goto 426
+   704	pointer			Push; goto 451
+   705	pointer_long		Push; goto 453
+   706	pointer_quad		Push; goto 455
+   707	pointer_hw		Push; goto 457
+   708	integer_byte		Push; goto 459
+   709	integer_word		Push; goto 461
+   710	integer_long		Push; goto 463
+   711	integer_quad		Push; goto 465
+   712	integer_hw		Push; goto 467
+   713	integer			Push; goto 469
+   714	hardware_address	Push; goto 471
+   715	hardware_integer	Push; goto 473
+   716	all others		Look ahead reduce last 0 to IMPL_UNION_DATATYPE by rule 182
+   717	MEMBER_OPTIONS		Push; goto 719
+   718	all others		Look ahead reduce last 0 to MEMBER_OPTIONS by rule 217
+   719	';'			Reduce 4 to SUB_AGG_DCL by rule 218, perform action MAKECHILD
+   720	continue at 586
+   721	DATA_OR_USER_TYPE	Push; goto 723
+   722	continue at 283
+   723	ITEM_OPTIONS		Push; goto 725
+   724	all others		Look ahead reduce last 0 to ITEM_OPTIONS by rule 244
+   725	';'			Reduce 4 to ITEM_STATEMENT by rule 235, perform action ENDITEM
+   726	common			Reduce 2 to ITEM_OPTIONS by rule 237, perform action SETCOMMON
+   727	global			Reduce 2 to ITEM_OPTIONS by rule 238, perform action SETGLOBAL
+   728	typedef			Reduce 2 to ITEM_OPTIONS by rule 239, perform action SETTYPEDEF
+   729	prefix			Push; goto 734
+   730	tag			Push; goto 736
+   731	dimension		Push; goto 738
+   732	BASEALIGN_OPTION	Reduce 2 to ITEM_OPTIONS by rule 243
+   733	continue at 593
+   734	NAMESTRING		Reduce 3 to ITEM_OPTIONS by rule 240, perform action SETPREFIX
+   735	continue at 104
+   736	NAMESTRING		Reduce 3 to ITEM_OPTIONS by rule 241, perform action SETTAG
+   737	continue at 104
+   738	DIMEN_EXPR		Reduce 3 to ITEM_OPTIONS by rule 242
+   739	continue at 331
+   740	DECL_BODY		Push; goto 745
+   741	SIZEOF_CLAUSE		Reduce to DECL_BODY by rule 259, perform action SETUSER
+   742	SIZEOF_KEYWORD		Push; goto 357
+   743	sizeof			Reduce to SIZEOF_KEYWORD by rule 251, perform action SETSIZEOF
+   744	all others		Error
+   745	DECL_OPTIONS		Push; goto 747
+   746	all others		Look ahead reduce last 0 to DECL_OPTIONS by rule 262
+   747	prefix			Push; goto 750
+   748	tag			Push; goto 752
+   749	all others		Look ahead reduce last 3 to DECLARE_STATEMENT by rule 257, perform action SETDECL
+   750	NAMESTRING		Reduce 3 to DECL_OPTIONS by rule 260, perform action SETPREFIX
+   751	continue at 104
+   752	NAMESTRING		Reduce 3 to DECL_OPTIONS by rule 261, perform action SETTAG
+   753	continue at 104
+   754	';'			Push; goto 756
+   755	all others		Error
+   756	MODULE_BODY		Push; goto 758
+   757	all others		Look ahead reduce last 0 to MODULE_BODY by rule 17
+   758	ELSE_IFSYMBOL_STATEMENT	Push; goto 796
+   759	STATEMENT		Reduce 2 to MODULE_BODY by rule 16
+   760	LOCAL_ASSIGNMENT	Reduce to STATEMENT by rule 22
+   761	CONSTANT_STATEMENT	Reduce to STATEMENT by rule 23
+   762	ENTRY_STATEMENT		Reduce to STATEMENT by rule 24
+   763	AGGREGATE_STATEMENT	Reduce to STATEMENT by rule 25
+   764	ITEM_STATEMENT		Reduce to STATEMENT by rule 26
+   765	DECLARE_STATEMENT	Reduce to STATEMENT by rule 27
+   766	IFSYMBOL_STATEMENT	Reduce to STATEMENT by rule 28
+   767	CONDITIONAL_STATEMENT	Reduce to STATEMENT by rule 29
+   768	LITERAL_STATEMENT	Reduce to STATEMENT by rule 30
+   769	READ_STATEMENT		Push; goto 82
+   770	comment			Reduce to STATEMENT by rule 32, perform action COMMENTNOD
+   771	INCLUDE_CLAUSE		Push; goto 84
+   772	errormark		Push; goto 76
+   773	';'			Reduce to STATEMENT by rule 35
+   774	LOCAL_SYMBOL		Push; goto 86
+   775	CONSTANT_KEY		Push; goto 155
+   776	ENTRY_CLAUSE		Push; goto 255
+   777	AGGREGATE_DCL		Push; goto 516
+   778	ITEM_CLAUSE		Push; goto 721
+   779	DECL_CLAUSE		Push; goto 740
+   780	IFSYMBOL_START		Push; goto 754
+   781	COND1			Push; goto 847
+   782	LITERAL_KEYWORD		Push; goto 876
+   783	read			Push; goto 881
+   784	include			Push; goto 883
+   785	local_name		Reduce to LOCAL_SYMBOL by rule 43, perform action SAVELOCALNAME
+   786	constant		Reduce to CONSTANT_KEY by rule 45, perform action STARTCONST
+   787	entry			Push; goto 896
+   788	AGGREGATE_CLAUSE	Push; goto 898
+   789	item			Push; goto 935
+   790	declare			Push; goto 937
+   791	ifsymbol		Push; goto 662
+   792	iflanguage		Reduce to COND1 by rule 264, perform action STARTCOND
+   793	literal			Push; goto 939
+   794	aggregate		Push; goto 941
+   795	all others		Look ahead reduce last 0 to ELSE_IFSYMBOL_STATEMENT by rule 228
+   796	ELSE_SYMBOL_STATEMENT	Push; goto 802
+   797	ELSE_IFSYMBOL_START	Push; goto 806
+   798	ELSE_SYMBOL		Push; goto 948
+   799	else_ifsymbol		Push; goto 686
+   800	else			Reduce to ELSE_SYMBOL by rule 233, perform action IFSYMBOL_ELSE
+   801	all others		Look ahead reduce last 0 to ELSE_SYMBOL_STATEMENT by rule 230
+   802	IFSYMBOL_END		Push; goto 804
+   803	continue at 636
+   804	';'			Reduce 7 to IFSYMBOL_STATEMENT by rule 226
+   805	all others		Error
+   806	';'			Push; goto 808
+   807	all others		Error
+   808	MODULE_BODY		Push; goto 810
+   809	all others		Look ahead reduce last 0 to MODULE_BODY by rule 17
+   810	STATEMENT		Reduce 2 to MODULE_BODY by rule 16
+   811	LOCAL_ASSIGNMENT	Reduce to STATEMENT by rule 22
+   812	CONSTANT_STATEMENT	Reduce to STATEMENT by rule 23
+   813	ENTRY_STATEMENT		Reduce to STATEMENT by rule 24
+   814	AGGREGATE_STATEMENT	Reduce to STATEMENT by rule 25
+   815	ITEM_STATEMENT		Reduce to STATEMENT by rule 26
+   816	DECLARE_STATEMENT	Reduce to STATEMENT by rule 27
+   817	IFSYMBOL_STATEMENT	Reduce to STATEMENT by rule 28
+   818	CONDITIONAL_STATEMENT	Reduce to STATEMENT by rule 29
+   819	LITERAL_STATEMENT	Reduce to STATEMENT by rule 30
+   820	READ_STATEMENT		Push; goto 82
+   821	comment			Reduce to STATEMENT by rule 32, perform action COMMENTNOD
+   822	INCLUDE_CLAUSE		Push; goto 84
+   823	errormark		Push; goto 76
+   824	';'			Reduce to STATEMENT by rule 35
+   825	LOCAL_SYMBOL		Push; goto 86
+   826	CONSTANT_KEY		Push; goto 155
+   827	ENTRY_CLAUSE		Push; goto 255
+   828	AGGREGATE_DCL		Push; goto 516
+   829	ITEM_CLAUSE		Push; goto 721
+   830	DECL_CLAUSE		Push; goto 740
+   831	IFSYMBOL_START		Push; goto 754
+   832	COND1			Push; goto 847
+   833	LITERAL_KEYWORD		Push; goto 876
+   834	read			Push; goto 881
+   835	include			Push; goto 883
+   836	local_name		Reduce to LOCAL_SYMBOL by rule 43, perform action SAVELOCALNAME
+   837	constant		Reduce to CONSTANT_KEY by rule 45, perform action STARTCONST
+   838	entry			Push; goto 896
+   839	AGGREGATE_CLAUSE	Push; goto 898
+   840	item			Push; goto 935
+   841	declare			Push; goto 937
+   842	ifsymbol		Push; goto 662
+   843	iflanguage		Reduce to COND1 by rule 264, perform action STARTCOND
+   844	literal			Push; goto 939
+   845	aggregate		Push; goto 941
+   846	all others		Look ahead reduce last 4 to ELSE_IFSYMBOL_STATEMENT by rule 227
+   847	COND2			Push; goto 852
+   848	LANGUAGE_LIST		Push; goto 943
+   849	LANG_NAME		Reduce to LANGUAGE_LIST by rule 266
+   850	NAMESTRING		Reduce to LANG_NAME by rule 268, perform action CONDOBJ
+   851	continue at 104
+   852	MODULE_BODY		Push; goto 854
+   853	all others		Look ahead reduce last 0 to MODULE_BODY by rule 17
+   854	end_iflanguage		Push; goto 870
+   855	STATEMENT		Reduce 2 to MODULE_BODY by rule 16
+   856	LOCAL_ASSIGNMENT	Reduce to STATEMENT by rule 22
+   857	CONSTANT_STATEMENT	Reduce to STATEMENT by rule 23
+   858	ENTRY_STATEMENT		Reduce to STATEMENT by rule 24
+   859	AGGREGATE_STATEMENT	Reduce to STATEMENT by rule 25
+   860	ITEM_STATEMENT		Reduce to STATEMENT by rule 26
+   861	DECLARE_STATEMENT	Reduce to STATEMENT by rule 27
+   862	IFSYMBOL_STATEMENT	Reduce to STATEMENT by rule 28
+   863	CONDITIONAL_STATEMENT	Reduce to STATEMENT by rule 29
+   864	LITERAL_STATEMENT	Reduce to STATEMENT by rule 30
+   865	READ_STATEMENT		Push; goto 82
+   866	comment			Reduce to STATEMENT by rule 32, perform action COMMENTNOD
+   867	INCLUDE_CLAUSE		Push; goto 84
+   868	errormark		Push; goto 76
+   869	continue at 45
+   870	LANG_LIST_OPT		Push; goto 872
+   871	all others		Look ahead reduce last 0 to LANG_LIST_OPT by rule 270
+   872	NAMESTRING		Reduce 2 to LANG_LIST_OPT by rule 269, perform action MARKLANG
+   873	name			Reduce to NAMESTRING by rule 79, perform action CHECKNULL
+   874	string_literal		Reduce to NAMESTRING by rule 80
+   875	all others		Look ahead reduce last 5 to CONDITIONAL_STATEMENT by rule 263, perform action ENDCOND
+   876	STRINGLIST		Push; goto 878
+   877	all others		Look ahead reduce last 0 to STRINGLIST by rule 274
+   878	end_literal		Reduce 3 to LITERAL_STATEMENT by rule 271, perform action ENDLIT
+   879	string_literal		Reduce 2 to STRINGLIST by rule 273, perform action MAKLITNOD
+   880	all others		Error
+   881	string_literal		Reduce 2 to READ_STATEMENT by rule 39, perform action READFILE
+   882	all others		Error
+   883	INCLUDE_NAME		Push; goto 886
+   884	string_literal		Reduce to INCLUDE_NAME by rule 38, perform action INCLUDETEXT
+   885	all others		Error
+   886	STAT_LIST		Push; goto 893
+   887	eof			Reduce 3 to INCLUDE_CLAUSE by rule 37, perform action RESETTEXT
+   888	STATEMENT		Reduce to STAT_LIST by rule 41
+   889	LOCAL_ASSIGNMENT	Reduce to STATEMENT by rule 22
+   890	CONSTANT_STATEMENT	Reduce to STATEMENT by rule 23
+   891	ENTRY_STATEMENT		Reduce to STATEMENT by rule 24
+   892	continue at 859
+   893	eof			Reduce 4 to INCLUDE_CLAUSE by rule 36, perform action RESETTEXT
+   894	STATEMENT		Reduce 2 to STAT_LIST by rule 40
+   895	continue at 856
+   896	NAMESTRING		Reduce 2 to ENTRY_CLAUSE by rule 82, perform action MAKENTNOD
+   897	continue at 104
+   898	AGGREGATE_TYPE		Push; goto 902
+   899	structure		Reduce to AGGREGATE_TYPE by rule 179, perform action SETSTRUC
+   900	union			Reduce to AGGREGATE_TYPE by rule 180, perform action SETUNION
+   901	all others		Error
+   902	IMPL_UNION_DATATYPE	Push; goto 904
+   903	continue at 689
+   904	AGGR_OPTIONS		Push; goto 906
+   905	all others		Look ahead reduce last 0 to AGGR_OPTIONS by rule 197
+   906	';'			Reduce 5 to AGGREGATE_DCL by rule 177, perform action MAKECHILD
+   907	common			Reduce 2 to AGGR_OPTIONS by rule 183, perform action SETCOMMON
+   908	global			Reduce 2 to AGGR_OPTIONS by rule 184, perform action SETGLOBAL
+   909	typedef			Reduce 2 to AGGR_OPTIONS by rule 185, perform action SETTYPEDEF
+   910	align			Reduce 2 to AGGR_OPTIONS by rule 186, perform action SETALIGN
+   911	noalign			Reduce 2 to AGGR_OPTIONS by rule 187, perform action SETNOALIGN
+   912	BASEALIGN_OPTION	Reduce 2 to AGGR_OPTIONS by rule 188
+   913	prefix			Push; goto 921
+   914	tag			Push; goto 923
+   915	dimension		Push; goto 925
+   916	origin			Push; goto 927
+   917	based			Push; goto 929
+   918	marker			Push; goto 933
+   919	fill			Reduce 2 to AGGR_OPTIONS by rule 196, perform action SETFILL
+   920	continue at 593
+   921	NAMESTRING		Reduce 3 to AGGR_OPTIONS by rule 189, perform action SETPREFIX
+   922	continue at 104
+   923	NAMESTRING		Reduce 3 to AGGR_OPTIONS by rule 190, perform action SETTAG
+   924	continue at 104
+   925	DIMEN_EXPR		Reduce 3 to AGGR_OPTIONS by rule 191
+   926	continue at 331
+   927	NAMESTRING		Reduce 3 to AGGR_OPTIONS by rule 192, perform action SETORIGIN
+   928	continue at 104
+   929	NAMESTRING		Reduce 3 to AGGR_OPTIONS by rule 193, perform action BASEDPTR
+   930	name			Reduce to NAMESTRING by rule 79, perform action CHECKNULL
+   931	string_literal		Reduce to NAMESTRING by rule 80
+   932	all others		Look ahead reduce last 2 to AGGR_OPTIONS by rule 194
+   933	NAMESTRING		Reduce 3 to AGGR_OPTIONS by rule 195, perform action SETMARK
+   934	continue at 104
+   935	NAMESTRING		Reduce 2 to ITEM_CLAUSE by rule 236, perform action MAKITMNOD
+   936	continue at 104
+   937	USER_TYPENAME		Reduce 2 to DECL_CLAUSE by rule 258, perform action MAKITMNOD
+   938	continue at 311
+   939	';'			Reduce 2 to LITERAL_KEYWORD by rule 272, perform action STARTLIT
+   940	all others		Error
+   941	NAMESTRING		Reduce 2 to AGGREGATE_CLAUSE by rule 178, perform action MAKITMNOD
+   942	continue at 104
+   943	LANG_NAME		Reduce 2 to LANGUAGE_LIST by rule 267
+   944	NAMESTRING		Reduce to LANG_NAME by rule 268, perform action CONDOBJ
+   945	name			Reduce to NAMESTRING by rule 79, perform action CHECKNULL
+   946	string_literal		Reduce to NAMESTRING by rule 80
+   947	all others		Look ahead reduce last to COND2 by rule 265, perform action POPCOND
+   948	';'			Push; goto 950
+   949	all others		Error
+   950	MODULE_BODY		Push; goto 952
+   951	all others		Look ahead reduce last 0 to MODULE_BODY by rule 17
+   952	STATEMENT		Reduce 2 to MODULE_BODY by rule 16
+   953	LOCAL_ASSIGNMENT	Reduce to STATEMENT by rule 22
+   954	CONSTANT_STATEMENT	Reduce to STATEMENT by rule 23
+   955	ENTRY_STATEMENT		Reduce to STATEMENT by rule 24
+   956	AGGREGATE_STATEMENT	Reduce to STATEMENT by rule 25
+   957	ITEM_STATEMENT		Reduce to STATEMENT by rule 26
+   958	DECLARE_STATEMENT	Reduce to STATEMENT by rule 27
+   959	IFSYMBOL_STATEMENT	Reduce to STATEMENT by rule 28
+   960	CONDITIONAL_STATEMENT	Reduce to STATEMENT by rule 29
+   961	LITERAL_STATEMENT	Reduce to STATEMENT by rule 30
+   962	READ_STATEMENT		Push; goto 82
+   963	comment			Reduce to STATEMENT by rule 32, perform action COMMENTNOD
+   964	INCLUDE_CLAUSE		Push; goto 84
+   965	errormark		Push; goto 76
+   966	';'			Reduce to STATEMENT by rule 35
+   967	LOCAL_SYMBOL		Push; goto 86
+   968	CONSTANT_KEY		Push; goto 155
+   969	ENTRY_CLAUSE		Push; goto 255
+   970	AGGREGATE_DCL		Push; goto 516
+   971	ITEM_CLAUSE		Push; goto 721
+   972	DECL_CLAUSE		Push; goto 740
+   973	IFSYMBOL_START		Push; goto 754
+   974	COND1			Push; goto 847
+   975	LITERAL_KEYWORD		Push; goto 876
+   976	read			Push; goto 881
+   977	include			Push; goto 883
+   978	local_name		Reduce to LOCAL_SYMBOL by rule 43, perform action SAVELOCALNAME
+   979	constant		Reduce to CONSTANT_KEY by rule 45, perform action STARTCONST
+   980	entry			Push; goto 896
+   981	AGGREGATE_CLAUSE	Push; goto 898
+   982	item			Push; goto 935
+   983	declare			Push; goto 937
+   984	ifsymbol		Push; goto 662
+   985	iflanguage		Reduce to COND1 by rule 264, perform action STARTCOND
+   986	literal			Push; goto 939
+   987	aggregate		Push; goto 941
+   988	all others		Look ahead reduce last 3 to ELSE_SYMBOL_STATEMENT by rule 229
+   989	M_OPTIONS		Push; goto 992
+   990	ident			Push; goto 994
+   991	all others		Look ahead reduce last 0 to M_OPTIONS by rule 15
+   992	';'			Reduce 3 to MODULE_STATEMENT by rule 11, perform action MAKECHILD
+   993	all others		Error
+   994	NAMESTRING		Reduce 2 to M_OPTIONS by rule 14, perform action SETIDENT
+   995	continue at 104
+   996	NAMESTRING		Reduce 2 to M_NAME by rule 12, perform action MAKMODNOD
+   997	continue at 104
+   998	module			Push; goto 1000
+   999	all others		Error
+  1000	NAMESTRING		Reduce 3 to M_NAME by rule 13, perform action SYNERROR
+  1001	continue at 104
+  1002	eof			Reduce 2 to M2 by rule 5, perform action SYNERROR
+  1003	continue at 998
+
+PAT statistics:
+	Number of productions	=        296
+	Maximum symbol code	=        420
+	Number of states	=        579
+	Size of tables is	=       1003

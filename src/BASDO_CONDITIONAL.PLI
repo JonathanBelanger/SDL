@@ -1,0 +1,90 @@
+/*
+ *****************************************************************************
+ *                                                                           *
+ * Copyright 1988 Compaq Computer Corporation                                *
+ *                                                                           *
+ * Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+ *                                                                           *
+ * Confidential computer software. Valid license from Compaq required for    *
+ * possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+ * Commercial Computer Software, Computer Software Documentation, and        *
+ * Technical Data for Commercial Items are licensed to the U.S. Government   *
+ * under vendors standard commercial license.                                *
+ *                                                                           *
+ *****************************************************************************
+
+facility:
+
+	SDL (Structure Definition Language)
+
+
+author:
+	Jeff Goodenough
+
+*/
+
+/*			C H A N G E    L O G
+
+      Date	| Name	| Description
+________________|_______|______________________________________________________
+    22-Feb-1988	|  jg	| X3.2-0  Process a conditional node (created using
+		|	|	  DO_ENTRY as a model)
+________________|_______|______________________________________________________
+     8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+________________|_______|______________________________________________________
+*/
+
+
+/****************************************************************/
+/*								*/
+/* DO_CONDITIONAL processes an conditional node.		*/
+/*								*/
+/****************************************************************/
+
+do_conditional: proc(cur_node,level);
+					    /********************/
+					    /*			*/
+					    /* DO_CONDITIONAL	*/
+					    /*			*/
+					    /********************/
+%include 'sdl$library:sdlnodef.in';
+
+%replace lang_name by 'BASIC';
+%replace true by '1'b;
+%replace false by '0'b;
+
+/* declare variables */
+declare
+    cur_node pointer,			    /* pointer to the current node  */
+    level fixed binary(31),		    /* level in the aggregate	    */
+    buf char(1024) var initial(''),	    /* output buffer		    */
+    p pointer,
+    process_conditional bit init(false);
+
+DCL OUTPUT_BUF ENTRY (
+	character(1024) VARYING );
+
+DCL ADD_COMMENTS ENTRY (
+	pointer,
+	character(1024) VARYING );
+
+DCL DO_CHILDREN ENTRY (
+	pointer,
+	fixed binary(31) );
+
+
+    /* Search for this language in the list */
+
+    p = cur_node->nod$a_typeinfo2->nod$a_flink;
+    do while (^process_conditional & p->nod$b_type = nod$k_objnode);
+	if p->nod$t_name = lang_name then process_conditional = true;
+	p = p->nod$a_flink;
+    end;
+
+    if process_conditional then do;
+	call add_comments(cur_node,buf);
+	call output_buf(buf);
+	call do_children(cur_node,level-1); /* process children at same level */
+	end;
+
+end do_conditional;

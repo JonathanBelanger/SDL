@@ -1,0 +1,65 @@
+;*
+;*****************************************************************************
+;*                                                                           *
+;* Copyright 1978 Compaq Computer Corporation                                *
+;*                                                                           *
+;* Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+;*                                                                           *
+;* Confidential computer software. Valid license from Compaq required for    *
+;* possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+;* Commercial Computer Software, Computer Software Documentation, and        *
+;* Technical Data for Commercial Items are licensed to the U.S. Government   *
+;* under vendors standard commercial license.                                *
+;*                                                                           *
+;*****************************************************************************
+;
+;++
+; facility:
+;
+;	SDL (Structure Definition Language)
+;
+; abstract:
+;
+;	Common data declarations.  These include the tables
+;	of language names, entry points for the language output routines,
+;	and language output file extensions.
+;
+; author:
+;	c.t. pacy
+; date:
+;	revised 22-DEC-1981	ctp
+;	revised 21-Dec-1983	kd	-  Make necessary changes for V2.0.
+;					   Remove all specific language references
+;					   and $language macro (no longer necessary).
+;	revised 20-May-1992	jak	-  Removed PSECT for LISTLINE, not used.
+;    8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+;--
+
+
+	.title	sdldata
+ 
+	.enable	lsb
+
+sdl$k_keyword_len==12			; length of keyword in table, including 
+				; backslash
+ 
+; token node -- This is used by the PAT parser to pass tokens to the
+;		action routines
+;
+maxtoksiz==132
+	.psect	token,ovr,gbl,noexe,shr,pic,long
+token::
+	.blkl	10	; token_id
+	.blkl	10	; src_line
+	.blkl	10	; token_length
+	.blkl	10	; token_address
+	.blkb	10	; start_line
+	.blkb	10	; synthetic
+	.blkb  	1320	; token_string (132*10)
+
+	.psect token_index,ovr,gbl,noexe,shr,pic,long
+token_index::
+	.blkl 	1
+ 
+	.end
+ 

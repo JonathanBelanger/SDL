@@ -1,0 +1,59 @@
+	.title	sdlhashf
+;*
+;*****************************************************************************
+;*                                                                           *
+;* Copyright 1980 Compaq Computer Corporation                                *
+;*                                                                           *
+;* Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+;*                                                                           *
+;* Confidential computer software. Valid license from Compaq required for    *
+;* possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+;* Commercial Computer Software, Computer Software Documentation, and        *
+;* Technical Data for Commercial Items are licensed to the U.S. Government   *
+;* under vendors standard commercial license.                                *
+;*                                                                           *
+;*****************************************************************************
+;
+;++
+; facility:
+;
+;	SDL (Structure Definition Language)
+;
+; abstract:
+;
+;	a hash function that takes a PL/I varying character string
+;	and hashes it to an integer between 0 and a specified maximum
+;
+;	4(ap)	address of char var string
+;	8(ap)	address of max. integer value
+;
+; author:
+;	c.t. pacy
+; date:
+;	revised 22-DEC-1981	ctp
+;    8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+;--
+
+
+constant=65537
+ 
+	.entry hashf ^m<r2,r3,r4,r5,r6,r7>
+ 
+	movl	4(ap),r2		; addr of char string arg
+	movzwl	(r2)+,r3		; byte count of string
+	clrl	r6			; accumulator
+	ashl	#-2,r3,r4		; get longword count
+	beql	20$			; if lt 1 lw, br
+10$:	xorl2	(r2)+,r6		; xor the string
+	rotl	#1,r6,r6		; rotate it
+	sobgtr	r4,10$
+20$:	extzv	#0,#2,r3,r4		; get leftover byte count
+	clrl	-(sp)			; make a temp
+	movc3	r4,(r2),(sp)		; and get the leftover bytes
+	xorl2	(sp)+,r6		; xor it in
+	mull2	#constant,r6		; now mult it
+	clrl	r7			; make it quad
+	ediv	@8(ap),r6,r1,r0		; get result mod max_value
+	ret
+ 
+	.end

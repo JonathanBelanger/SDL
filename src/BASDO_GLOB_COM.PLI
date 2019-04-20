@@ -1,0 +1,76 @@
+/*
+ *****************************************************************************
+ *                                                                           *
+ * Copyright 1978 Compaq Computer Corporation                                *
+ *                                                                           *
+ * Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+ *                                                                           *
+ * Confidential computer software. Valid license from Compaq required for    *
+ * possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+ * Commercial Computer Software, Computer Software Documentation, and        *
+ * Technical Data for Commercial Items are licensed to the U.S. Government   *
+ * under vendors standard commercial license.                                *
+ *                                                                           *
+ *****************************************************************************
+
+facility:
+
+	SDL (Structure Definition Language)
+
+
+author:
+	Paul A. Calato
+
+*/
+
+/*			C H A N G E    L O G
+
+      Date	! Name	! Description
+________________!_______!______________________________________________________
+   		!  	! 					
+    23-Nov-1985	|  pc	| Adding copyright header and change log.
+________________!_______!______________________________________________________
+     8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+________________|_______|______________________________________________________
+*/
+
+
+/****************************************************************/
+/*								*/
+/* DO_GLOB_COM	puts out the global or common declaration for   */
+/* for aggregates						*/
+/*								*/
+/****************************************************************/
+
+do_glob_com: proc ( cur_node );
+					    /********************/
+					    /*			*/
+					    /* DO_GLOB_COM	*/
+					    /*			*/
+					    /********************/
+
+%include 'sdl$library:sdlnodef.in';
+
+/* declare variables */
+declare
+    cur_node pointer,			    /* pointer to the current node  */
+    name char(34) var;			    /* name of the item		    */
+
+DCL OUTPUT_BUF ENTRY (
+	character(1024) VARYING );
+
+
+
+    name = cur_node->nod$t_name;
+    if( cur_node->nod$v_global )
+    then
+	call output_buf('   EXTERNAL ' || name || ' ' || name );
+
+    if ( cur_node->nod$v_common )
+    then
+	call output_buf('   COMMON ' || ' ' || name || ' ' || name );
+
+    call output_buf(' ');
+
+
+end do_glob_com;

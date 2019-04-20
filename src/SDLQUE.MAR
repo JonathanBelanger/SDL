@@ -1,0 +1,46 @@
+;*
+;*****************************************************************************
+;*                                                                           *
+;* Copyright 1980 Compaq Computer Corporation                                *
+;*                                                                           *
+;* Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+;*                                                                           *
+;* Confidential computer software. Valid license from Compaq required for    *
+;* possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+;* Commercial Computer Software, Computer Software Documentation, and        *
+;* Technical Data for Commercial Items are licensed to the U.S. Government   *
+;* under vendors standard commercial license.                                *
+;*                                                                           *
+;*****************************************************************************
+;
+;++
+; facility:
+;
+;	SDL (Structure Definition Language)
+;
+; abstract:
+;
+;	does macro queue instructions for PL/I routines
+;
+; author:
+;	c.t. pacy
+; date:
+;	revised 22-DEC-1981	ctp
+;    8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+;--
+
+
+	.title	sdlque
+;
+; does insque and remque instructions
+;
+ 
+	.entry	insque	^m<>
+	insque	@4(ap),@8(ap)
+	ret
+ 
+	.entry	remque	^m<>
+	remque	@4(ap),@8(ap)
+	ret
+ 
+	.end

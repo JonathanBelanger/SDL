@@ -1,0 +1,38 @@
+MODULE $SEMDEF;	{ Token and Semantic Action Definitions
+
+{*
+{*****************************************************************************
+{*                                                                           *
+{* Copyright 1982 Compaq Computer Corporation                                *
+{*                                                                           *
+{* Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+{*                                                                           *
+{* Confidential computer software. Valid license from Compaq required for    *
+{* possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+{* Commercial Computer Software, Computer Software Documentation, and        *
+{* Technical Data for Commercial Items are licensed to the U.S. Government   *
+{* under vendors standard commercial license.                                *
+{*                                                                           *
+{*****************************************************************************
+{
+{++
+{
+{ FACILITY:	VAX-11 SDL
+{
+{ ABSTRACT:
+{
+{	This module contains the token and semantic action constant definitions.
+{
+{ ENVIRONMENT:	VAX/VMS user mode
+{
+{ AUTHOR:	Unknown		CREATION DATE:	Unknown
+{
+{ MODIFIED BY:
+{
+{    8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+{--
+
+{	T O K E N   V A L U E S
+
+
+CONSTANT T_NULL EQUALS 0;

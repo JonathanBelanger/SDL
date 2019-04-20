@@ -1,0 +1,257 @@
+                                Source Listing                  24-APR-2009 13:27:00  BLISS-32E V1.11-007-48G4L         Page 1
+                                Source Listing                  24-APR-2009 13:26:23  DISK$SYSMAN:[LAISHEV.WORK.SDL]PATDATA.BLI;3
+
+    0	      1 !<BLF/REQUIRE'PATBLF_INI'>
+    0	      2 module PATDATA (ident = 'X2-001'
+    0	      3 	%require ('PATSWITCH.REQ')
+    0	      9 		) =
+    0	     10 begin
+    1	     11 !
+    1	     12 !*
+    1	     13 !*****************************************************************************
+    1	     14 !*                                                                           *
+    1	     15 !* Copyright 1982 Compaq Computer Corporation                                *
+    1	     16 !*                                                                           *
+    1	     17 !* Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+    1	     18 !*                                                                           *
+    1	     19 !* Confidential computer software. Valid license from Compaq required for    *
+    1	     20 !* possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+    1	     21 !* Commercial Computer Software, Computer Software Documentation, and        *
+    1	     22 !* Technical Data for Commercial Items are licensed to the U.S. Government   *
+    1	     23 !* under vendors standard commercial license.                                *
+    1	     24 !*                                                                           *
+    1	     25 !*****************************************************************************
+    1	     26 !
+    1	     27 
+    1	     28 !++
+    1	     29 ! FACILITY:	PAT parser
+    1	     30 !
+    1	     31 ! ABSTRACT:
+    1	     32 !
+    1	     33 !	PATDATA.BLI.  PAT/BLISS interface.  Definition of parse tables.
+    1	     34 !
+    1	     35 !	This file is generally language independent.  (See PATDATA.REQ.)
+    1	     36 !
+    1	     37 ! ENVIRONMENT:
+    1	     38 !
+    1	     39 ! AUTHOR:  C. Mitchell, CREATION DATE:  18-Feb-80
+    1	     40 !
+    1	     41 ! MODIFIED BY:
+    1	     42 !
+    1	     43 ! 	Charlie Mitchell, 03-Sep-81 : VERSION X1-001
+    1	     44 ! 001 - Define the parse tables as an abstract data type.
+    1	     45 !    8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+    1	     46 !--
+    1	     47 
+    1	     48 !
+    1	     49 ! INCLUDE FILES:
+    1	     50 !
+    1	     51 
+    1	     52 require 'PATPROLOG.REQ';
+    1	    315 
+    1	    316 require	'PATDATA.REQ';
+	    443     PATBLSEXT_DEBUGGING =
+		....1                     
+%BLS32-E-TEXT, (1) Name to be declared is missing
+
+
+PATDATA                         Source Listing                  24-APR-2009 13:27:00  BLISS-32E V1.11-007-48G4L         Page 2
+X2-001                          Source Listing                  24-APR-2009 13:26:23  DISK$SYSMAN:[LAISHEV.WORK.SDL]PATBLSEXT.REQ;1
+
+	    456     PATBLSEXT_LOCAL_RECOVERY =
+		....1                          
+%BLS32-E-TEXT, (1) Name to be declared is missing
+
+	    466     PATBLSEXT_EXTRA_STACK_FIELD =
+		....1                             
+%BLS32-E-TEXT, (1) Name to be declared is missing
+
+	    485     NULL = 0;
+		....1         
+%BLS32-W-TEXT, (1) Name already declared in this block:  NULL
+
+	    488     TRUE = 1,
+		....1         
+%BLS32-W-TEXT, (1) Name already declared in this block:  TRUE
+
+	    489     FALSE = 0;
+		....1          
+%BLS32-W-TEXT, (1) Name already declared in this block:  FALSE
+
+	    492     ZEROBYTE (CNT, DST) =
+		...................1      
+%BLS32-W-TEXT, (1) Name to be declared is missing
+
+%BLS32-E-TEXT, (1) Missing comma or closing bracket in formal parameter list for CH$FILL
+-BLS32-E-TEXT,  The incorrect delimiter was "("
+
+%BLS32-W-TEXT, (1) Undeclared name:  CNT
+
+%BLS32-W-TEXT, (1) Undeclared name:  DST
+
+	    531     SD_FIELDS =
+		....1           
+%BLS32-W-TEXT, (1) Name already declared in this block:  SD_BASE
+
+%BLS32-E-TEXT, (1) Missing equal sign in STRUCTURE or MACRO declaration
+-BLS32-E-TEXT,  The incorrect delimiter was ","
+
+	    535     SD_STR =
+		....1        
+%BLS32-W-TEXT, (1) Name to be declared is a reserved word:  BYTE
+
+%BLS32-E-TEXT, (1) Missing comma or closing bracket in formal parameter list for BLOCK
+-BLS32-E-TEXT,  The incorrect delimiter was "BYTE"
+
+%BLS32-I-TEXT, (1) Null expression appears in value-required context
+
+%BLS32-W-TEXT, (1) Expression must be a link-time constant
+
+	    539 	(SD_FIELDS) %;
+		.........1             
+%BLS32-I-TEXT, (1) Null expression appears in value-required context
+
+%BLS32-W-TEXT, (1) Expression must be a link-time constant
+
+
+PATDATA                         Source Listing                  24-APR-2009 13:27:00  BLISS-32E V1.11-007-48G4L         Page 3
+X2-001                          Source Listing                  30-MAR-2009 21:08:06  DISK$SYSMAN:[LAISHEV.WORK.SDL]PATBLSEXT.REQ;1
+
+	    542     SD_VAL (ST) =
+		............1     
+%BLS32-E-TEXT, (1) Name to be declared is missing
+
+	    555     SD_NULL_STRING =
+		....1                
+%BLS32-E-TEXT, (1) Name to be declared is missing
+
+	    560     SD_REF (ST) =
+		............1     
+%BLS32-E-TEXT, (1) Name to be declared is a reserved word:  UPLIT
+
+	    566     SD_STRING_EQUAL (S1, S2) =
+		.........................1     
+%BLS32-E-TEXT, (1) Name to be declared is a reserved word:  BEGIN
+
+%BLS32-E-TEXT, (1) LOCAL declaration is illegal outside routine body
+
+%BLS32-E-TEXT, (1) Missing structure name following REF
+
+%BLS32-I-TEXT, (1) Null expression appears in value-required context
+
+%BLS32-W-TEXT, (1) Expression must be a link-time constant
+
+%BLS32-W-TEXT, (1) Undeclared name:  S1
+
+%BLS32-W-TEXT, (1) Undeclared name:  S2
+
+%BLS32-W-TEXT, (1) No structure attribute for variable D1 in structure reference
+
+	    569 	local
+		........1     
+%BLS32-E-TEXT, (1) LOCAL declaration is illegal outside routine body
+
+	    570 	    D1 : ref SD_STR,
+		.....................1       
+%BLS32-E-TEXT, (1) Missing structure name following REF
+
+%BLS32-I-TEXT, (1) Null expression appears in value-required context
+
+%BLS32-W-TEXT, (1) Expression must be a link-time constant
+
+	    571 	    D2 : ref SD_STR;
+		.....................1       
+%BLS32-I-TEXT, (1) Null expression appears in value-required context
+
+%BLS32-W-TEXT, (1) Expression must be a link-time constant
+
+	    573 	D1 = S1;
+		.............1   
+%BLS32-W-TEXT, (1) Undeclared name:  S1
+
+
+PATDATA                         Source Listing                  24-APR-2009 13:27:00  BLISS-32E V1.11-007-48G4L         Page 4
+X2-001                          Source Listing                  30-MAR-2009 21:08:06  DISK$SYSMAN:[LAISHEV.WORK.SDL]PATBLSEXT.REQ;1
+
+	    574 	D2 = S2;
+		.............1   
+%BLS32-W-TEXT, (1) Undeclared name:  S2
+
+	    575 	ch$eql (.D1 [SD_LENGTH], .D1 [SD_TEXT], .D2 [SD_LENGTH], .D2 [SD_TEXT])
+		.................1................2                                             
+%BLS32-W-TEXT, (1) No structure attribute for variable D1 in structure reference
+
+%BLS32-W-TEXT, (2) No structure attribute for variable D1 in structure reference
+
+	    600     ENUMERATION (TYPE, STARTVAL) [] =
+		.......................1.........2    
+%BLS32-E-TEXT, (1) Name to be declared is a reserved word:  COMPILETIME
+
+%BLS32-W-TEXT, (1) Undeclared name:  STARTVAL
+
+%BLS32-W-TEXT, (1) Expression must be a compile-time constant
+
+%BLS32-W-TEXT, (2) Missing operand preceding "[".  A literal zero has been inserted
+
+%BLS32-W-TEXT, (2) Operand preceding left bracket in structure reference is not a variable name
+
+	    602 	compiletime
+		........1           
+%BLS32-W-TEXT, (1) Missing operand following "=".  A literal zero has been inserted
+
+%BLS32-E-TEXT, (1) Declaration following an expression in a block
+-BLS32-E-TEXT,  The incorrect delimiter was "COMPILETIME"
+
+	    603 	    %name (TYPE) = (STARTVAL);
+		...................1                   
+%BLS32-W-TEXT, (1) Name already declared in this block:  TYPE
+
+%BLS32-W-TEXT, (1) Expression must be a compile-time constant
+
+	    609 		%name ('FIRST_', TYPE) = (STARTVAL),
+		.................................1                   
+%BLS32-W-TEXT, (1) Name already declared in this block:  FIRST_TYPE
+
+%BLS32-W-TEXT, (1) Expression must be a compile-time constant
+
+	    610 		%name ('LAST_', TYPE) = (STARTVAL) - 1;
+		................................1                       
+%BLS32-W-TEXT, (1) Name already declared in this block:  LAST_TYPE
+
+%BLS32-W-TEXT, (1) Expression must be a compile-time constant
+
+	    621     %;
+		....1  
+%BLS32-W-TEXT, (1) Missing operand preceding "%".  A literal zero has been inserted
+
+%BLS32-E-TEXT, (1) Percent sign outside macro declaration
+
+
+PATDATA                         Source Listing                  24-APR-2009 13:27:00  BLISS-32E V1.11-007-48G4L         Page 5
+X2-001                          Source Listing                  30-MAR-2009 21:08:06  DISK$SYSMAN:[LAISHEV.WORK.SDL]PATBLSEXT.REQ;1
+
+	    623 macro
+		1     
+%BLS32-E-TEXT, (1) Declaration following an expression in a block
+-BLS32-E-TEXT,  The incorrect delimiter was "MACRO"
+
+	    624     ENUM1 (COUNTER) [ENUMLIT] =
+		....................12          
+%BLS32-E-TEXT, (1) Name to be declared is missing
+
+%BLS32-W-TEXT, (2) Undeclared name:  ENUMLIT
+
+	    625 	%name (ENUMLIT) = COUNTER %assign(COUNTER, COUNTER + 1) %;
+		..........................................1..................2     
+%BLS32-W-TEXT, (1) Illegal parameter in call to lexical function %ASSIGN
+
+%BLS32-W-TEXT, (2) Illegal parameter in call to lexical function %ASSIGN
+
+	   1201 require 'PAT_REQUIRE_FILE';
+		........1                   
+%BLS32-E-M_OPENIN, (1) error opening PAT_REQUIRE_FILE as input
+-BLS32-E-FNF, file not found
+
+
+%BLS32-E-TEXT, Fatal error - compilation aborted
+

@@ -1,0 +1,92 @@
+{
+{*****************************************************************************
+{*                                                                           *
+{* Copyright 1982 Compaq Computer Corporation                                *
+{*                                                                           *
+{* Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+{*                                                                           *
+{* Confidential computer software. Valid license from Compaq required for    *
+{* possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+{* Commercial Computer Software, Computer Software Documentation, and        *
+{* Technical Data for Commercial Items are licensed to the U.S. Government   *
+{* under vendors standard commercial license.                                *
+{*                                                                           *
+{*****************************************************************************
+{
+{++
+{ facility:
+{
+{	SDL (Structure Definition Language)
+{
+{ abstract:
+{
+{	Generates constants for the datatype codes for tree nodes
+{
+{ author:
+{	c.t. pacy
+{ date:
+{	revised 22-DEC-1981	ctp
+{--
+
+{			C H A N G E    L O G
+
+{      Date	! Name	! Description
+{_______________!_______!______________________________________________________
+{    7-Apr-1987	|  jw	| X3.1-0  Change log added.
+{		|	|	  Added float_complex, double_complex,
+{		|	|	  grand_complex and huge_complex constants.
+{_______________!_______!______________________________________________________
+{   14-Jan-1988	|  jg	| X3.2-0  Added user and void constants.
+{_______________!_______!______________________________________________________
+{    8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+{_______________|_______|______________________________________________________
+{
+{	 1-FEB-2006	RRL	Added a number of data types (maxidx);
+
+
+module $typdef ident "EV1-0";
+
+constant (
+	"address", {1
+	"byte", {2
+	"char", {3
+	"boolean", {4
+	"decimal", {5
+	"double", {6
+	"float", {7
+	"grand", {8
+	"huge", {9
+	"longword", {10
+	"octaword", {11
+	"quadword", {12
+	"vield", {13
+	"word", {14
+	"structure", {15
+	"union", {16
+	"any", {17
+	"entry", {18
+	"double_complex", {19
+	"float_complex", {20
+	"grand_complex", {21
+	"huge_complex", {22
+	"user", {23
+	"void", {24
+	"integer", {25
+	"hardware_address", {26
+	"hardware_integer", {27
+        "pointer_hw", {28
+        "pointer_long", {29
+        "pointer", {30
+        "pointer_quad", {31
+        "integer_byte", {32
+        "integer_word", {33
+        "integer_long", {34
+        "integer_quad", {35
+        "integer_hw", {36
+
+) equals 1 increment 1 prefix typ$;
+
+constant	maxidx	equals 36	typ$;
+
+end_module;
+

@@ -1,0 +1,74 @@
+/*
+ *****************************************************************************
+ *                                                                           *
+ * Copyright 1978 Compaq Computer Corporation                                *
+ *                                                                           *
+ * Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+ *                                                                           *
+ * Confidential computer software. Valid license from Compaq required for    *
+ * possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+ * Commercial Computer Software, Computer Software Documentation, and        *
+ * Technical Data for Commercial Items are licensed to the U.S. Government   *
+ * under vendors standard commercial license.                                *
+ *                                                                           *
+ *****************************************************************************
+
+facility:
+
+	SDL (Structure Definition Language)
+
+
+author:
+	Paul A. Calato
+
+*/
+
+/*			C H A N G E    L O G
+
+      Date	! Name	! Description
+________________!_______!______________________________________________________
+   		!  	! 					
+    23-Nov-1985	|  pc	| Adding copyright header and change log.
+________________!_______!______________________________________________________
+     8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+________________|_______|______________________________________________________
+*/
+
+
+/****************************************************************/
+/*								*/
+/* DO_COM_NODE processes a comment node				*/
+/*								*/
+/****************************************************************/
+
+
+do_com_node: proc(cur_node);
+					    /********************/
+					    /*			*/
+					    /* DO_COM_NODE		*/
+					    /*			*/
+					    /********************/
+%include 'sdl$library:sdlnodef.in';
+
+/* decalre variables */
+declare
+    cur_node pointer,			    /* pointer to the current node  */
+    buf char(1024) var,			    /* buffer for output	    */
+    based_str char(1024) var based;	    /* references the comment	    */
+
+
+/* declare external routines */
+DCL OUTPUT_BUF ENTRY (
+	character(1024) VARYING );
+
+DCL ADD_COMMENTS ENTRY (
+	pointer,
+	character(1024) VARYING );
+
+
+
+    buf = '';
+    call add_comments(cur_node,buf);
+    call output_buf(buf);
+
+end do_com_node;

@@ -1,0 +1,368 @@
+/*
+ *****************************************************************************
+ *                                                                           *
+ * Copyright 1978 Compaq Computer Corporation                                *
+ *                                                                           *
+ * Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+ *                                                                           *
+ * Confidential computer software. Valid license from Compaq required for    *
+ * possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+ * Commercial Computer Software, Computer Software Documentation, and        *
+ * Technical Data for Commercial Items are licensed to the U.S. Government   *
+ * under vendors standard commercial license.                                *
+ *                                                                           *
+ *****************************************************************************
+
+facility:
+
+	SDL (Structure Definition Language)
+
+abstract:
+
+	includes utility routines to convert an integer to a trimmed
+	character string and to fill out a buffer with blanks
+	to a given column width
+
+author:
+	C.T. Pacy
+date:
+	revised 22-DEC-1980	ctp
+*/
+
+/* <FF>
+			C H A N G E    L O G
+
+      Date	| Name	| Description
+________________|_______|______________________________________________________
+    27-Nov-2000	|  LJK	| EV1-65  Add temporary procedures GET_DISCRIMINANT
+		|	|	and DIMENSION_STAR_CONTROLLING.
+		|	|	
+		|	|	Change copyright notice to Compaq format.
+________________|_______|______________________________________________________
+*/
+%replace MODULE_IDENT by 'EV1-65';
+
+
+%replace vsize by 1024;
+%replace line_length by 132;
+%replace symbol_length by 32;
+
+/******************************* TRIM ******************************
+ *
+ *  accept an integer and return the equivalent character string
+ *  stripped of all leading blanks
+ */
+TRIM:	proc (i) returns (char(32) var);
+	dcl i fixed bin;
+	dcl a char(32) var;
+	a=character(i);
+	a=substr(a,verify(a,' '));
+	return(a);
+end TRIM;
+ 
+/******************************** FILL ******************************
+ *
+ * fill out the statement part of a short statement to n characters
+ * (don't forget to account for the fact that tabs take up more
+ * than one character space of output!)
+ */
+FILL:	proc(a,n) returns (char(line_length) var);
+
+	dcl tab char init (byte(9));
+
+	dcl n fixed bin, nblks fixed bin;
+	dcl a char(*) var;
+	dcl b char(line_length) var;
+	dcl (l,i,j) fixed bin;
+
+	b = a;
+	i = index (b,tab);
+	if i = 0 then
+		l = length(b);
+	else
+		l = i - 1;
+	do while (i ^= 0);
+		l = l + (8 - mod(l,8));
+                if i>=length(b) then
+			i=0;
+		else do;
+			j=index(substr(b,i+1),tab);
+			if j=0 then do;
+				l = l + length(substr(b,i+1));
+				i=0;
+				end;
+			else do;
+				i = i + j;
+				l = l + j - 1;
+				end;
+			end;
+		end;
+	if l < n then do;
+
+		nblks = n - l;
+		b = b || copy(' ',nblks);
+		end;
+	else
+		b = b||' ';
+
+	return (b);
+end FILL;
+
+
+    /*<ff>*/
+
+DIMENSION_STAR_CONTROLLING : proc(caller_module,caller_marker_aggregate)
+         returns (char(line_length) var);
+
+/*
+ * This procedure was added for EV1-65.
+ *
+ * FUNCTIONAL DESCRIPTION:
+ *
+ * FORMAL PARAMETERS:
+ *
+ *     caller_module - uppercase name of the SDL module
+ *
+ *     caller_marker_aggregate - concatenation of MARKER and AGGREGATE strings
+ *
+ * This routine takes a module name and an marker/aggregate name,
+ * returning the name of the member of that aggregate that controls
+ * the dimension of another member encoded as "DIMENSION *".  SDL
+ * documentation reserved "DIMENSION *" for a PARAMETER within an
+ * ENTRY statement and never allowed it for an AGGREGATE member.
+ * But the parse table in SDLPAT.PAT was not so discriminating
+ * and certain SDL modules in the VMS Build were inadvertently
+ * written to take advantage of that loophole, producing output
+ * that compiled correctly in lower level languages like Bliss
+ * and C, but not in strongly typed languages like Ada and Pascal.
+ *
+ * At this time (EV1-65, VMS V7.3-1) it is not feasible to change
+ * the SDLPAT.PAT tables to modify the SDL input language, so we
+ * will temporary have the Ada and Pascal back ends share a list
+ * hard-coded into routine DIMENSION_STAR_CONTROLLING indicating
+ * for particular instances in the VMS Build where "DIMENSION *"
+ * will be encountered what member controls the dimension of the
+ * member encoded as "DIMENSION *". 
+ *
+ * The second parameter to this procedure is a concatenation of
+ * the aggregate name and any MARKER specification because of 
+ * situations like that in SOFT_ERROR_DEF.SDL, which contains 
+ * two AGGREGATE statements, both with a name of "pkt". 
+ *
+ * Temporary routine DIMENSION_STAR_CONTROLLING returns hard-coded
+ * information regarding what field controls the length of another
+ * field within the VMS build.  In the future this will be replaced
+ * by a revision to the SDL input language, cracking down on the
+ * erroneous use of the construct "DIMENSION *" for a MEMBER within
+ * an AGGREGATE.
+ *
+ * The format returned by temporary routine DIMENSION_STAR_CONTROLLING
+ * is a comma-separated list, with each element containing an uppercased
+ * field name, possibly followed by slash and some of the letters T and B.
+ * The field name identifies a field of the record that should be a
+ * discriminant.
+ *
+ * The absence of T after the slash indicates that the discriminant
+ * controls the size of the next field marked "DIMENSION *" in the
+ * SDL source.
+ *
+ * The presence of T after the slash indicates that the discriminant
+ * controls the size of the entire record.
+ *
+ * The absence of B after the slash indicates that the discriminant
+ * expresses size of the next field marked "DIMENSION *" in the
+ * SDL source as the number of of natural units for that field.
+ *
+ * The presence of B after the slash indicates that the discriminant
+ * expresses size in a number of 8-bit Bytes (Octets).
+ *
+ * The combination /T (as distinguished from /TB or /BT) is meaningless.
+ *
+ * When the SDL front end is changed to allow encoding these values
+ * into the source language and source tree, a suitable syntax
+ * enhancement to "DIMENSION *" must be chosen.
+ *
+ * Item marked "A lie -- length is not encoded" below will be changed to
+ * some fixed minimal size in source files when the SDL front end is changed
+ * to reject simple "DIMENSION *" MEMBERs in AGGREGATEs.
+ *
+ */
+
+	dcl (caller_module,caller_marker_aggregate) char(symbol_length) var;
+	dcl (upcased_module,upcased_marker_aggregate) char(symbol_length) var;
+	dcl result char(line_length) var;
+
+        upcased_module = translate(caller_module,
+                                   'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                                   'abcdefghijklmnopqrstuvwxyz');
+        upcased_marker_aggregate = translate(caller_marker_aggregate,
+                                    'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                                    'abcdefghijklmnopqrstuvwxyz');
+	result = '';
+	if ( upcased_module = '$ACMECONTROLDEF' )
+         & ( upcased_marker_aggregate = 'ACMEAGTLST' ) then
+		result = 'NAME_SIZE';
+	else if ( upcased_module = '$ACMECONTROLDEF' )
+         & ( upcased_marker_aggregate = 'ACMESHWSRVB' ) then
+		result = 'REQUEST_CNT';	/* A lie -- length is not encoded */
+	else if ( upcased_module = '$ACMECONTROLDEF' )
+         & ( upcased_marker_aggregate = 'ACMESHWSRVF' ) then
+		result = 'LOG_FILE_OFFSET';	/* A lie -- length is not encoded */
+	else if ( upcased_module = '$ACMECONTROLDEF' )
+         & ( upcased_marker_aggregate = 'ACMESHWSRV' ) then
+		result = 'FULL_OFFSET';	/* A lie -- length is not encoded */
+	else if ( upcased_module = '$ACMECONTROLDEF' )
+         & ( upcased_marker_aggregate = 'ACMESHWAGTB' ) then
+		result = 'INFO_OFFSET';	/* A lie -- length is not encoded */
+	else if ( upcased_module = '$ACMECONTROLDEF' )
+         & ( upcased_marker_aggregate = 'ACMESHWAGTF' ) then
+		result = 'VMZONE_AVAILBYTES';	/* A lie -- length is not encoded */
+	else if ( upcased_module = '$ACMECONTROLDEF' )
+         & ( upcased_marker_aggregate = 'ACMESHWAGT' ) then
+		result = 'FULL_OFFSET';	/* A lie -- length is not encoded */
+	else if ( upcased_module = '$ACMECONTROLDEF' )
+         & ( upcased_marker_aggregate = 'ACMECTLMSG' ) then
+		result = 'TYPE';	/* A lie -- length is not encoded */
+	else if ( upcased_module = '$ACMESERVERDEF' )
+         & ( upcased_marker_aggregate = 'ACMEACB' ) then
+		result = 'SIZE/T';
+	else if ( upcased_module = '$ACMESERVERDEF' )
+         & ( upcased_marker_aggregate = 'DIALOGSEG' ) then
+		result = 'SIZE/T';
+	else if ( upcased_module = '$ACMESERVERDEF' )
+         & ( upcased_marker_aggregate = 'ACMEXWQE' ) then
+		result = 'SIZE/BT';	/* initial ITEMSEG_LENGTH was wrong */
+	else if ( upcased_module = '$ERF_PIDEF' )
+         & ( upcased_marker_aggregate = 'PORT_MSG' ) then
+		result = 'LENGTH1,LENGTH2';
+	else if ( upcased_module = 'RUBY_MEMSCAN_DEF' )
+         & ( upcased_marker_aggregate = 'PKT' ) then
+		result = 'CTL_CNT';
+	else if ( upcased_module = 'SOFT_ERROR_DEF' )
+         & ( upcased_marker_aggregate = 'LASER_SE$PKT' ) then
+		result = 'CRD_FOOT_SIZE';
+	else if ( upcased_module = 'SOFT_ERROR_DEF' )
+         & ( upcased_marker_aggregate = 'ARA_CRD$PKT' ) then
+		result = 'FPRINT_SIZE';
+	else if ( upcased_module = '$LATITMDEF' )
+         & ( upcased_marker_aggregate = 'DUMMY_ITEM_COUNTED_STRING' ) then
+		result = 'DUMMY_ITEM_BCNT';
+	else if ( upcased_module = '$ACMEAGENT_DATA_DEF' )
+         & ( upcased_marker_aggregate = 'ACMEOUTITM' ) then
+		result = 'MAX_LENGTH';
+	else if ( upcased_module = '$ACMECOMMONDEF' )
+         & ( upcased_marker_aggregate = 'ACMECRED' ) then
+		result = 'CREDENTIALS_SIZE';
+	/*
+	 * Ok, so this next one is a lie, because the Ada backend puts
+	 * SIZE into a separate record.  An effort should be made to
+         * fix this when control over "DIMENSION *" relationships is
+         * moved into SDL source.
+	 */
+	else if ( upcased_module = '$ACMECOMMONDEF' )
+         & ( upcased_marker_aggregate = 'ACMERM' ) then
+		result = 'CREDENTIALS_SIZE/BT';
+	else if ( upcased_module = '$ACMECOMMONDEF' )
+         & ( upcased_marker_aggregate = 'ACMERM' ) then
+		result = 'SIZE/BT';
+	else if ( upcased_module = '$ACMECOMMONDEF' )
+         & ( upcased_marker_aggregate = 'ACMEADB' ) then
+		result = 'NAME_LEN';
+	else if ( upcased_module = '$ACMECOMMONDEF' )
+         & ( upcased_marker_aggregate = 'ACMECH' ) then
+		result = 'ACME_TBL_SIZE';
+
+	return (result);
+end DIMENSION_STAR_CONTROLLING;	/* End of procedure added for EV1-65. */
+
+
+    /*<ff>*/
+
+get_discriminant : procedure(remaining, next, t, b);
+
+/*
+ * This procedure was added for EV1-65.
+ *
+ * FUNCTIONAL DESCRIPTION:
+ *
+ * FORMAL PARAMETERS:
+ *
+ *     remaining - uppercase comma-separated list of discriminants
+ *
+ *     next - output name of next discriminant
+ *
+ *     t - output "T" qualification of next discriminant
+ *
+ *     b - output "B" qualification of next discriminant
+ *
+ * This temporary procedure parses the output of temporary procedure
+ * DIMENSION_STAR_CONTROLLING (received in IN-OUT parameter "remaining")
+ * to separate the next comma separated element into the three output
+ * parameters.
+ *
+ * It also removes the first comma-separated element from the IN-OUT
+ * parameter "remaining".
+ *
+ * The format returned by temporary routine DIMENSION_STAR_CONTROLLING
+ * is a comma-separated list, with each element containing an uppercased
+ * field name, possibly followed by slash and some of the letters T and B.
+ * The field name identifies a field of the record that should be a
+ * discriminant.
+ *
+ * The absence of T after the slash indicates that the discriminant
+ * controls the size of the next field marked "DIMENSION *" in the
+ * SDL source.
+ *
+ * The presence of T after the slash indicates that the discriminant
+ * controls the size of the entire record.
+ *
+ * The absence of B after the slash indicates that the discriminant
+ * expresses size of the next field marked "DIMENSION *" in the
+ * SDL source as the number of of natural units for that field.
+ *
+ * The presence of B after the slash indicates that the discriminant
+ * expresses size in a number of 8-bit Bytes (Octets).
+ *
+ * The combination /T (as distinguished from /TB or /BT) is meaningless.
+ *
+ * When the SDL front end is changed to allow encoding these values
+ * into the source language and source tree, a suitable syntax
+ * enhancement to "DIMENSION *" must be chosen.
+ */
+
+    dcl (remaining, next, t, b) char(vsize) var;
+
+    dcl (pos,length_of_remaining,length_of_next) fixed bin;
+
+    /*
+     * Separate out the next comma-separated element.
+     */
+
+    next = remaining;
+    pos = index(remaining, ',');
+    if pos > 0 then do;
+        length_of_remaining = length(remaining);
+        next = substr(remaining, 1, pos-1);
+        remaining = substr(remaining, pos+1, length_of_remaining);
+        end;
+    else
+        remaining = '';
+
+    /*
+     * Separate out any qualifying letters (reporting B and T for now).
+     */
+
+    t = '';
+    b = '';
+    pos = index(next, '/');
+    if pos > 0 then do;
+        length_of_next = length(next);
+        if index(substr(next, pos+1, length_of_next), 'T') > 0 then
+            t = 'T';
+        if index(substr(next, pos+1, length_of_next), 'B') > 0 then
+            b= 'B';
+        next = substr(next, 1, pos-1);
+        end;
+
+end get_discriminant;	/* End of procedure added for EV1-65. */
+

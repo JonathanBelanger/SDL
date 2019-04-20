@@ -1,0 +1,32 @@
+<comment>(union of length 4)
+ <table_row>(sts$l_value\)
+ <comment> <table_row>(sts$v_success\This field is 1 bit long, and starts at bit 0.  ) <endcomment>
+ <comment> <table_unit> <endcomment>
+ <comment> <table_unit_heads>(<span>(2\left) The following fields are defined within sts$r_status2:) <endcomment>
+   <comment> <table_row>(sts$v_severity\This field is 3 bits long, and starts at bit 0.  ) <endcomment>
+   <comment> <table_row>(sts$v_cond_id\This field is 25 bits long, and starts at bit 3.  ) <endcomment>
+   <comment> <table_row>(sts$v_inhib_msg\This field is 1 bit long, and starts at bit 28.  ) <endcomment>
+   <comment> <table_row>(sts$v_cntrl\This field is 3 bits long, and starts at bit 29.  ) <endcomment>
+ <comment> <table_row>(<span>(2\left) <rule>) <endcomment>
+ <comment> <endtable_unit> <endcomment>
+ <comment> <table_row>( \ ) <endcomment>
+ <comment> <table_unit> <endcomment>
+ <comment> <table_unit_heads>(<span>(2\left) The following fields are defined within sts$r_status3:) <endcomment>
+   <comment> <table_row>(sts$v_status_fill3a\This field is 3 bits long, and starts at bit 0.  ) <endcomment>
+   <comment> <table_row>(sts$v_msg_no\This field is 13 bits long, and starts at bit 3.  ) <endcomment>
+   <comment> <table_row>(sts$v_fac_no\This field is 12 bits long, and starts at bit 16.  ) <endcomment>
+   <comment> <table_row>(sts$v_status_fill3b\This field is 4 bits long, and starts at bit 28.  ) <endcomment>
+ <comment> <table_row>(<span>(2\left) <rule>) <endcomment>
+ <comment> <endtable_unit> <endcomment>
+ <comment> <table_row>( \ ) <endcomment>
+ <comment> <table_unit> <endcomment>
+ <comment> <table_unit_heads>(<span>(2\left) The following fields are defined within sts$r_status4:) <endcomment>
+   <comment> <table_row>(sts$v_status_fill4a\This field is 3 bits long, and starts at bit 0.  ) <endcomment>
+   <comment> <table_row>(sts$v_code\This field is 12 bits long, and starts at bit 3.  ) <endcomment>
+   <comment> <table_row>(sts$v_fac_sp\This field is 1 bit long, and starts at bit 15.  ) <endcomment>
+   <comment> <table_row>(sts$v_status_fill4\This field is 11 bits long, and starts at bit 16.  ) <endcomment>
+   <comment> <table_row>(sts$v_cust_def\This field is 1 bit long, and starts at bit 27.  ) <endcomment>
+   <comment> <table_row>(sts$v_status_fill4b\This field is 4 bits long, and starts at bit 28.  ) <endcomment>
+ <comment> <table_row>(<span>(2\left) <rule>) <endcomment>
+ <comment> <endtable_unit> <endcomment>
+ <comment> <table_row>( \ ) <endcomment>

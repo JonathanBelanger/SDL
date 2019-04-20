@@ -1,0 +1,118 @@
+/*
+ *****************************************************************************
+ *                                                                           *
+ * Copyright 1983 Compaq Computer Corporation                                *
+ *                                                                           *
+ * Compaq and the Compaq logo Registered in U.S. Patent and Trademark Office.*
+ *                                                                           *
+ * Confidential computer software. Valid license from Compaq required for    *
+ * possession, use or copying. Consistent with FAR 12.211 and 12.212,        *
+ * Commercial Computer Software, Computer Software Documentation, and        *
+ * Technical Data for Commercial Items are licensed to the U.S. Government   *
+ * under vendors standard commercial license.                                *
+ *                                                                           *
+ *****************************************************************************
+
+facility:
+
+	SDL (Structure Definition Language)
+
+abstract:
+
+	Includes various I/O routines.  All reading and writing of
+	files is done by one of these routines.
+
+author:
+	C.T. Pacy
+date:
+	revised 22-DEC-1980	ctp
+
+modified by:
+
+/*			C H A N G E    L O G
+
+      Date	! Name	! Description
+________________|_______|______________________________________________________
+   		!  	! 					
+ Sept. 19, 1983 |  kd	| Remove this routine from the SDLIO.PLI file and make
+		|	| it a seperate routine.  Add some documentation to the
+		|	| routine.   Add the sdl$_shr_data parameter.
+________________|_______|______________________________________________________
+    01-Aug-1985	|  kd	| 2-1.  Add ident.  Modify the mechanism to signal the
+		|	|	endpage condition if this is the first line.
+		|	|	Check listline.
+________________|_______|______________________________________________________
+    20-May-92	|  jak	| EV1-10 Changed listline to long int and added CHAR6 to
+		|	|	support list line numbers up to 6 digits.
+________________|_______|______________________________________________________
+     8-Dec-2000	|  LJK	| EV1-65  Change copyright notice to Compaq format.
+________________|_______|______________________________________________________
+*/
+/*
+	This routine writes a line to the listing, if the listing
+	option is turned on
+*/
+sdl$writelist:	proc (buf,sdl$_shr_data) options (ident('EV1-10'))
+		    returns (fixed bin(31));
+
+/* INCLUDED SOURCE FILES */
+%include 'sdl$library:sdlshr.in';	/* include the shared data */
+
+%replace FF by 12;
+	dcl ss$_normal globalref value fixed bin(31);
+	dcl buf char(*) ;
+	dcl xbuf char(132) var;
+	dcl i fixed bin;
+
+on endpage (lisfile) begin;
+	put file(lisfile) page;
+	put file(lisfile) edit (sdl_listing_header(1),pageno(lisfile)) 
+		(a,f(4));
+	put skip file(lisfile) edit (sdl_listing_header(2)) 
+		(a);
+	put skip file(lisfile);
+	end;
+ 
+
+	if sdl$v_listing_opt then do;
+ 
+		if listline = 1 then do;
+			pageno(lisfile)=0;
+			signal endpage (lisfile);
+			end;
+
+		if listline>0 then
+			xbuf=char6(listline)||'  '||buf;
+		else
+			xbuf=buf;
+		
+		i = index(xbuf,byte(FF)) ;
+		if i ^= 0 then
+			xbuf=translate(xbuf,' ',byte(FF));
+
+		put skip file(lisfile) list (xbuf);
+
+		if i ^= 0 then
+			signal endpage(lisfile);
+		end;
+
+	return(ss$_normal);
+
+/*-----------------------------*/
+char6:
+	procedure( int ) returns( char(6) );
+
+dcl int fixed bin(31);
+
+dcl s char(6) var;
+dcl rs char(6);
+
+	s = trim(int);
+	rs = '';
+	substr(rs,7-length(s)) = s;
+
+	return( rs );
+
+	end char6;
+/*-----------------------------*/
+end;
